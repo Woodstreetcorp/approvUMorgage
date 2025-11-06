@@ -8,7 +8,8 @@ import { Card, CardContent } from "@/components/ui/card";
 
 export const metadata: Metadata = {
   title: "Mortgage Pre-Approval in Minutes | approvU Mortgage",
-  description: "Get pre-approved for your mortgage online in minutes. No credit impact, fast approvals, expert guidance, and offers from 25+ Canadian lenders.",
+  description:
+    "Get pre-approved for your mortgage online in minutes. No credit impact, fast approvals, expert guidance, and offers from 25+ Canadian lenders.",
 };
 
 export default function MortgageApproval() {
@@ -28,7 +29,8 @@ export default function MortgageApproval() {
     {
       number: "3",
       title: "Get Your Approval",
-      description: "Receive your pre-approval and personalized offers from top lenders.",
+      description:
+        "Receive your pre-approval and personalized offers from top lenders.",
       icon: "🏠",
     },
   ];
@@ -59,23 +61,28 @@ export default function MortgageApproval() {
   const faqs = [
     {
       question: "Will this affect my credit score?",
-      answer: "No, our initial pre-approval uses a soft credit check which doesn't impact your credit score. Only when you're ready to proceed with a lender will a hard credit check be required.",
+      answer:
+        "No, our initial pre-approval uses a soft credit check which doesn't impact your credit score. Only when you're ready to proceed with a lender will a hard credit check be required.",
     },
     {
       question: "How long does pre-approval take?",
-      answer: "Most applications are processed within 24 hours. Complex situations may take up to 2-3 business days, but we'll keep you updated throughout the process.",
+      answer:
+        "Most applications are processed within 24 hours. Complex situations may take up to 2-3 business days, but we'll keep you updated throughout the process.",
     },
     {
       question: "What documents do I need?",
-      answer: "Typically you'll need proof of income (pay stubs, T4s), employment verification, bank statements, and ID. We'll provide a detailed list based on your specific situation.",
+      answer:
+        "Typically you'll need proof of income (pay stubs, T4s), employment verification, bank statements, and ID. We'll provide a detailed list based on your specific situation.",
     },
     {
       question: "Is approvU licensed?",
-      answer: "Yes, approvU is licensed by FSRA (Financial Services Regulatory Authority of Ontario) and follows all Canadian mortgage broker regulations. Your data is secure and confidential.",
+      answer:
+        "Yes, approvU is licensed by FSRA (Financial Services Regulatory Authority of Ontario) and follows all Canadian mortgage broker regulations. Your data is secure and confidential.",
     },
     {
       question: "How many lenders do you work with?",
-      answer: "We partner with 25+ major Canadian lenders including banks, credit unions, and alternative lenders to find you the best rates and terms.",
+      answer:
+        "We partner with 25+ major Canadian lenders including banks, credit unions, and alternative lenders to find you the best rates and terms.",
     },
   ];
 
@@ -87,7 +94,8 @@ export default function MortgageApproval() {
             Get Approved in Minutes — 100% Online
           </h1>
           <p className="text-xl md:text-2xl mb-8 text-white/90 max-w-2xl mx-auto">
-            Fast, transparent mortgage pre-approval with no credit impact. Compare personalized offers from 25+ lenders.
+            Fast, transparent mortgage pre-approval with no credit impact.
+            Compare personalized offers from 25+ lenders.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
             <Button
@@ -99,7 +107,7 @@ export default function MortgageApproval() {
             <Button
               variant="outline"
               size="lg"
-              className="border-white text-white hover:bg-white/10 px-8 py-4 text-lg"
+              className="border-white text-white hover:bg-white/10 px-8 py-4 text-lg bg-transparent"
             >
               Chat with an Expert
             </Button>
@@ -234,7 +242,11 @@ export default function MortgageApproval() {
                       key={type}
                       className="flex items-center p-4 border-2 border-input rounded-xl hover:bg-card-hover hover:border-primary cursor-pointer transition-all duration-200"
                     >
-                      <input type="radio" name="mortgage-type" className="mr-3 accent-primary" />
+                      <input
+                        type="radio"
+                        name="mortgage-type"
+                        className="mr-3 accent-primary"
+                      />
                       <span className="font-semibold text-foreground">
                         {type === "Purchase" && "🏠 "}
                         {type === "Refinance" && "🔄 "}

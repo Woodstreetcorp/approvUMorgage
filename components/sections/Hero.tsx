@@ -67,13 +67,18 @@ export default function Hero({
     if (typeof secondaryCTA === "object") return secondaryCTA.href;
     return secondaryCTALink;
   };
+  const getGradientClasses = () => {
+    return variant === "gradient"
+      ? "bg-gradient-to-r from-primary/95 via-primary/85 to-transparent"
+      : "bg-[#0E6173]";
+  };
 
   const showSecondaryCTA = secondaryCTA || secondaryCTALink;
 
   return (
     <section className="relative py-20 lg:py-32 overflow-hidden">
       {/* Background Image */}
-      {backgroundImage && (
+      {backgroundImage && backgroundImage !== "No Image" && (
         <div className="absolute inset-0 z-0">
           <Image
             src={backgroundImage}
@@ -85,19 +90,21 @@ export default function Hero({
             quality={90}
             className="z-0"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/95 via-primary/85 to-transparent"></div>
+          <div className={`absolute inset-0 ${getGradientClasses()}`}></div>
         </div>
       )}
 
       {/* Content */}
       <div className="container relative z-10">
         <div className="mx-auto max-w-4xl text-left">
-          <Badge
-            variant="secondary"
-            className="mb-6 bg-white/20 text-white border-white/30 backdrop-blur-sm"
-          >
-            Powered by 25+ Lenders | FSRA Licensed | Zero-Pressure Process
-          </Badge>
+          {title === "Your Mortgage. Matched to Your Life." && (
+            <Badge
+              variant="secondary"
+              className="mb-6 bg-white/20 text-white border-white/30 backdrop-blur-sm"
+            >
+              Powered by 25+ Lenders | FSRA Licensed | Zero-Pressure Process
+            </Badge>
+          )}
           <h1 className="text-4xl font-bold tracking-tight sm:text-6xl mb-6 text-white leading-tight">
             {displayTitle.split(".").map((part, i, arr) => (
               <span key={i}>
@@ -116,7 +123,7 @@ export default function Hero({
             <Button
               size="lg"
               asChild
-              className="text-lg px-8 bg-white text-primary hover:bg-white/90 shadow-xl"
+              className="text-lg px-8 bg-white text-primary hover:bg-white/90 shadow-xl animate-bounce [animation-duration:0.4s]"
             >
               <Link href={getPrimaryCTALink()}>
                 {getPrimaryCTAText()}
@@ -136,9 +143,11 @@ export default function Hero({
               </Button>
             )}
           </div>
-          <p className="text-sm text-white/90 mt-4">
-            It only takes 5 minutes • No sales calls • No credit impact
-          </p>
+          {title === "Your Mortgage. Matched to Your Life." && (
+            <p className="text-sm text-white/90 mt-4">
+              It only takes 5 minutes • No sales calls • No credit impact
+            </p>
+          )}
         </div>
       </div>
     </section>

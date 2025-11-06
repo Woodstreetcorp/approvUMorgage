@@ -11,11 +11,11 @@ interface FeaturesGridProps {
   columns?: number;
 }
 
-export default function FeaturesGrid({ 
+export default function FeaturesGrid({
   title = "Why Choose approvU?",
   subtitle,
   features: customFeatures,
-  columns = 3
+  columns = 3,
 }: FeaturesGridProps) {
   const defaultFeatures: Feature[] = [
     {
@@ -25,7 +25,8 @@ export default function FeaturesGrid({
     },
     {
       title: "Best Rates",
-      description: "Compare rates from multiple lenders to find your best option",
+      description:
+        "Compare rates from multiple lenders to find your best option",
       icon: "💰",
     },
     {
@@ -51,11 +52,13 @@ export default function FeaturesGrid({
   ];
 
   const features = customFeatures || defaultFeatures;
-  
-  const gridColsClass = 
-    columns === 2 ? "md:grid-cols-2" :
-    columns === 4 ? "md:grid-cols-2 lg:grid-cols-4" :
-    "md:grid-cols-2 lg:grid-cols-3"; // default 3 columns
+
+  const gridColsClass =
+    columns === 2
+      ? "md:grid-cols-2"
+      : columns === 4
+      ? "md:grid-cols-2 lg:grid-cols-4"
+      : "md:grid-cols-2 lg:grid-cols-3"; // default 3 columns
 
   return (
     <section className="py-16 bg-white">
@@ -63,7 +66,7 @@ export default function FeaturesGrid({
         {(title || subtitle) && (
           <div className="text-center mb-12">
             {title && (
-              <h2 className="text-3xl font-bold mb-4">
+              <h2 className="text-3xl font-bold mb-4 text-[#2F8396]">
                 {title}
               </h2>
             )}
@@ -76,10 +79,22 @@ export default function FeaturesGrid({
         )}
         <div className={`grid grid-cols-1 ${gridColsClass} gap-8`}>
           {features.map((feature, index) => (
-            <div key={index} className="text-center p-6">
-              <div className="text-5xl mb-4">{feature.icon}</div>
-              <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-              <p className="text-gray-600">{feature.description}</p>
+            <div
+              key={index}
+              className="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl transition-all duration-300 ease-out hover:scale-[1.03] hover:bg-card-hover cursor-pointer group animate-slide-up"
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
+              <div
+                className={`w-16 h-16 rounded-2xl flex items-center justify-center text-5xl mb-6 mx-auto  text-white group-hover:animate-gentle-bounce`}
+              >
+                {feature.icon}
+              </div>
+              <h3 className="text-xl font-semibold text-primary mb-4 group-hover:text-primary-glow transition-colors">
+                {feature.title}
+              </h3>
+              <p className="text-muted-foreground leading-relaxed">
+                {feature.description}
+              </p>
             </div>
           ))}
         </div>
@@ -90,4 +105,3 @@ export default function FeaturesGrid({
 
 // Named export for compatibility
 export { FeaturesGrid };
-

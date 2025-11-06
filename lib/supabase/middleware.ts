@@ -43,6 +43,54 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  // Check if user is admin
+  const isAdmin = user?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL
+
+  // Check maintenance mode (skip for admin, API routes, auth routes, and maintenance page)
+  const skipPaths = [
+    '/admin',
+    '/api',
+    '/auth',
+    '/login',
+    '/_next',
+    '/favicon.ico'
+  ]
+  
+  const shouldCheckMaintenance = !skipPaths.some(path => 
+    request.nextUrl.pathname.startsWith(path)
+  )
+
+  // Check if maintenance mode is enabled
+  const { data: maintenanceData } = await supabase
+    .from('settings' as any)
+    .select('value')
+    .eq('key', 'maintenanceMode')
+    .single()
+
+  const isMaintenanceMode = (maintenanceData as any)?.value === 'true' || (maintenanceData as any)?.value === true
+
+  console.log('Maintenance check:', {
+    path: request.nextUrl.pathname,
+    isMaintenanceMode,
+    isAdmin,
+    userEmail: user?.email,
+    adminEmail: process.env.NEXT_PUBLIC_ADMIN_EMAIL
+  })
+
+  // If on maintenance page but maintenance is disabled, redirect to home
+  if (request.nextUrl.pathname === '/maintenance' && !isMaintenanceMode) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/'
+    return NextResponse.redirect(url)
+  }
+
+  // If maintenance mode is ON and user is not admin, redirect to maintenance page
+  if (shouldCheckMaintenance && !isAdmin && isMaintenanceMode) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/maintenance'
+    return NextResponse.redirect(url)
+  }
+
   // Protected routes - redirect to login if not authenticated
   if (
     !user &&

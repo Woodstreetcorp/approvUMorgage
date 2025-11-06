@@ -1,19 +1,11 @@
-import { isMaintenanceMode } from '@/lib/settings'
-import { isAdmin } from '@/lib/auth/helpers'
 import { Settings, Wrench } from 'lucide-react'
 
 // Force dynamic rendering (required for cookies/auth)
 export const dynamic = 'force-dynamic'
 
 export default async function MaintenancePage() {
-  const inMaintenance = await isMaintenanceMode()
-  const userIsAdmin = await isAdmin()
-  
-  // If not in maintenance or user is admin, don't show this page
-  if (!inMaintenance || userIsAdmin) {
-    return null
-  }
-
+  // Always show the maintenance page when accessed
+  // The middleware handles the redirect logic
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
       <div className="max-w-2xl w-full text-center">

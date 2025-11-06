@@ -469,12 +469,14 @@ export function PageEditorForm({ initialData, isNew = false }: PageEditorFormPro
             pageId={initialData.id}
             initialBlocks={contentBlocks}
             onSave={async (blocks) => {
-              // Save content blocks to database
+              // Save content blocks to the page's content_blocks field
               try {
-                const response = await fetch(`/api/admin/content-blocks/page/${initialData.id}`, {
-                  method: 'POST',
+                const response = await fetch(`/api/admin/pages?id=${initialData.id}`, {
+                  method: 'PUT',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ blocks }),
+                  body: JSON.stringify({ 
+                    content_blocks: blocks 
+                  }),
                 });
                 if (!response.ok) throw new Error('Failed to save content blocks');
                 setContentBlocks(blocks);

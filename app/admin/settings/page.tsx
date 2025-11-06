@@ -118,6 +118,11 @@ function SettingsContent() {
       toast.success('Settings saved successfully!');
       setSaveMessage(`✅ ${result.message || 'Settings saved!'} (${result.count || 0} settings updated)`);
       setTimeout(() => setSaveMessage(''), 5000);
+      
+      // Trigger refresh of social links in footer
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('refreshSocialLinks'));
+      }
     } catch (error: any) {
       console.error('Save settings error:', error);
       toast.error(error.message || 'Failed to save settings');

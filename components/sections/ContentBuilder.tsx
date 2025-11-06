@@ -20,6 +20,7 @@ import {
 } from '@dnd-kit/sortable';
 import { SortableBlock } from '@/components/sections/SortableBlock';
 import { BlockLibrary } from '@/components/sections/BlockLibrary';
+import { BlockEditor } from '@/components/sections/BlockEditor';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { 
@@ -66,6 +67,7 @@ export function ContentBuilder({
   const [isSaving, setIsSaving] = useState(false);
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -147,8 +149,18 @@ export function ContentBuilder({
 
   const handleEditBlock = (blockId: string) => {
     setSelectedBlockId(blockId);
-    // Open block editor (will be implemented with Block Library)
-    toast.info('Block editor coming soon!');
+    setIsEditorOpen(true);
+  };
+
+  const handleUpdateBlock = (updatedBlock: ContentBlock) => {
+    setBlocks((items) =>
+      items.map((item) =>
+        item.id === updatedBlock.id ? updatedBlock : item
+      )
+    );
+    setIsEditorOpen(false);
+    setSelectedBlockId(null);
+    toast.success('Block updated successfully!');
   };
 
   const handleAddBlockFromLibrary = (newBlock: ContentBlock) => {
@@ -305,6 +317,19 @@ export function ContentBuilder({
         onClose={() => setIsLibraryOpen(false)}
         onAddBlock={handleAddBlockFromLibrary}
       />
+
+      {/* Block Editor Modal */}
+      {selectedBlockId && (
+        <BlockEditor
+          open={isEditorOpen}
+          onClose={() => {
+            setIsEditorOpen(false);
+            setSelectedBlockId(null);
+          }}
+          block={blocks.find((b) => b.id === selectedBlockId)!}
+          onSave={handleUpdateBlock}
+        />
+      )}
     </div>
   );
 }

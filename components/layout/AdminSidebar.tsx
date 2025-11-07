@@ -47,11 +47,6 @@ const navItems: NavItem[] = [
     icon: <FileText className="w-5 h-5" />,
   },
   {
-    title: 'Content Blocks',
-    href: '/admin/content-blocks',
-    icon: <Box className="w-5 h-5" />,
-  },
-  {
     title: 'Blog Posts',
     href: '/admin/blog',
     icon: <Newspaper className="w-5 h-5" />,
@@ -85,11 +80,6 @@ const navItems: NavItem[] = [
     title: 'Users',
     href: '/admin/users',
     icon: <UserCog className="w-5 h-5" />,
-  },
-  {
-    title: 'Email Templates',
-    href: '/admin/templates',
-    icon: <FileCode className="w-5 h-5" />,
   },
   {
     title: 'Settings',

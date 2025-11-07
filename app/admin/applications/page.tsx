@@ -76,18 +76,14 @@ interface ApplicationsResponse {
 
 const STATUS_COLORS: Record<string, string> = {
   submitted: 'bg-blue-500',
-  reviewing: 'bg-yellow-500',
   approved: 'bg-green-500',
   rejected: 'bg-red-500',
-  pending: 'bg-gray-500',
 };
 
 const STATUS_ICONS: Record<string, any> = {
   submitted: FileText,
-  reviewing: Clock,
   approved: CheckCircle,
   rejected: XCircle,
-  pending: Clock,
 };
 
 // Inner component that uses React Query hooks
@@ -145,7 +141,6 @@ function ApplicationsManagerContent() {
   const stats = {
     total: data?.total || 0,
     submitted: 0,
-    reviewing: 0,
     approved: 0,
     rejected: 0,
   };
@@ -153,7 +148,6 @@ function ApplicationsManagerContent() {
   if (data?.applications) {
     data.applications.forEach(app => {
       if (app.status === 'submitted') stats.submitted++;
-      if (app.status === 'reviewing') stats.reviewing++;
       if (app.status === 'approved') stats.approved++;
       if (app.status === 'rejected') stats.rejected++;
     });
@@ -241,15 +235,6 @@ function ApplicationsManagerContent() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Reviewing</CardTitle>
-            <Clock className="h-4 w-4 text-yellow-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.reviewing}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Approved</CardTitle>
             <CheckCircle className="h-4 w-4 text-green-500" />
           </CardHeader>
@@ -291,10 +276,8 @@ function ApplicationsManagerContent() {
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="submitted">Submitted</SelectItem>
-                  <SelectItem value="reviewing">Reviewing</SelectItem>
                   <SelectItem value="approved">Approved</SelectItem>
                   <SelectItem value="rejected">Rejected</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
                 </SelectContent>
               </Select>
             </div>

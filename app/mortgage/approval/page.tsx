@@ -1,4 +1,6 @@
-import { Metadata } from "next";
+'use client';
+
+import { useState, FormEvent } from "react";
 import Hero from "@/components/sections/Hero";
 import StepsSection from "@/components/sections/StepsSection";
 import FAQBlock from "@/components/sections/FAQBlock";
@@ -6,13 +8,88 @@ import CTASection from "@/components/sections/CTASection";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
-export const metadata: Metadata = {
-  title: "Mortgage Pre-Approval in Minutes | approvU Mortgage",
-  description:
-    "Get pre-approved for your mortgage online in minutes. No credit impact, fast approvals, expert guidance, and offers from 25+ Canadian lenders.",
-};
-
 export default function MortgageApproval() {
+  const [formData, setFormData] = useState({
+    full_name: '',
+    email: '',
+    phone: '',
+    annual_income: '',
+    property_value: '',
+    down_payment_percentage: '',
+    credit_score_range: '',
+    employment_type: '',
+    mortgage_type: 'Purchase',
+    property_address: '',
+    property_city: '',
+    property_province: '',
+    property_postal_code: '',
+  });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<{
+    type: 'success' | 'error' | null;
+    message: string;
+  }>({ type: null, message: '' });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitStatus({ type: null, message: '' });
+
+    try {
+      const response = await fetch('/api/mortgage-application', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to submit application');
+      }
+
+      setSubmitStatus({
+        type: 'success',
+        message: result.message || 'Your mortgage application has been submitted successfully!',
+      });
+
+      // Clear form
+      setFormData({
+        full_name: '',
+        email: '',
+        phone: '',
+        annual_income: '',
+        property_value: '',
+        down_payment_percentage: '',
+        credit_score_range: '',
+        employment_type: '',
+        mortgage_type: 'Purchase',
+        property_address: '',
+        property_city: '',
+        property_province: '',
+        property_postal_code: '',
+      });
+
+      // Scroll to success message
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (error: any) {
+      setSubmitStatus({
+        type: 'error',
+        message: error.message || 'Failed to submit application. Please try again.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
   const approvalSteps = [
     {
       number: "1",
@@ -178,108 +255,216 @@ export default function MortgageApproval() {
             </p>
           </div>
 
+          {/* Success/Error Messages */}
+          {submitStatus.type && (
+            <div className={`mb-6 p-4 rounded-lg ${
+              submitStatus.type === 'success' 
+                ? 'bg-green-50 border border-green-200 text-green-800' 
+                : 'bg-red-50 border border-red-200 text-red-800'
+            }`}>
+              <p className="font-medium">{submitStatus.message}</p>
+              {submitStatus.type === 'success' && (
+                <p className="text-sm mt-2">Our team will review your application and contact you within 24 hours.</p>
+              )}
+            </div>
+          )}
+
           <Card className="bg-white rounded-2xl shadow-xl p-8 border border-primary/10">
             <CardContent className="pt-6">
-              <div className="grid md:grid-cols-2 gap-6 mb-8">
-                <div>
-                  <label className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
-                    💰 Annual Income
-                  </label>
-                  <select className="w-full p-4 border-2 border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary">
-                    <option>Select income range</option>
-                    <option>Under $50,000</option>
-                    <option>$50,000 - $75,000</option>
-                    <option>$75,000 - $100,000</option>
-                    <option>$100,000 - $150,000</option>
-                    <option>$150,000+</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
-                    🏠 Down Payment
-                  </label>
-                  <select className="w-full p-4 border-2 border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary">
-                    <option>Select down payment</option>
-                    <option>5% - 9%</option>
-                    <option>10% - 14%</option>
-                    <option>15% - 19%</option>
-                    <option>20% or more</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
-                    💼 Employment Type
-                  </label>
-                  <select className="w-full p-4 border-2 border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary">
-                    <option>Select employment type</option>
-                    <option>Full-time employed</option>
-                    <option>Part-time employed</option>
-                    <option>Self-employed</option>
-                    <option>Contract/Freelance</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
-                    ⭐ Credit Score Range
-                  </label>
-                  <select className="w-full p-4 border-2 border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary">
-                    <option>Select credit range</option>
-                    <option>Excellent (750+)</option>
-                    <option>Good (650-749)</option>
-                    <option>Fair (600-649)</option>
-                    <option>Building Credit (Under 600)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="mb-8">
-                <label className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
-                  🏡 Mortgage Type
-                </label>
-                <div className="grid md:grid-cols-3 gap-4">
-                  {["Purchase", "Refinance", "Renewal"].map((type) => (
-                    <label
-                      key={type}
-                      className="flex items-center p-4 border-2 border-input rounded-xl hover:bg-card-hover hover:border-primary cursor-pointer transition-all duration-200"
-                    >
-                      <input
-                        type="radio"
-                        name="mortgage-type"
-                        className="mr-3 accent-primary"
-                      />
-                      <span className="font-semibold text-foreground">
-                        {type === "Purchase" && "🏠 "}
-                        {type === "Refinance" && "🔄 "}
-                        {type === "Renewal" && "📋 "}
-                        {type}
-                      </span>
+              <form onSubmit={handleSubmit}>
+                <div className="grid md:grid-cols-2 gap-6 mb-8">
+                  <div>
+                    <label htmlFor="full_name" className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
+                      � Full Name <span className="text-red-500">*</span>
                     </label>
-                  ))}
+                    <input
+                      id="full_name"
+                      name="full_name"
+                      type="text"
+                      value={formData.full_name}
+                      onChange={handleChange}
+                      required
+                      disabled={isSubmitting}
+                      className="w-full p-4 border-2 border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                      placeholder="John Smith"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="email" className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
+                      ✉️ Email <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="email"
+                      name="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      required
+                      disabled={isSubmitting}
+                      className="w-full p-4 border-2 border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                      placeholder="john@example.com"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="phone" className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
+                      📱 Phone Number <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      required
+                      disabled={isSubmitting}
+                      className="w-full p-4 border-2 border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                      placeholder="(416) 555-0123"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="annual_income" className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
+                      💰 Annual Income
+                    </label>
+                    <input
+                      id="annual_income"
+                      name="annual_income"
+                      type="text"
+                      value={formData.annual_income}
+                      onChange={handleChange}
+                      disabled={isSubmitting}
+                      className="w-full p-4 border-2 border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                      placeholder="$75,000"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="property_value" className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
+                      🏡 Property Value
+                    </label>
+                    <input
+                      id="property_value"
+                      name="property_value"
+                      type="text"
+                      value={formData.property_value}
+                      onChange={handleChange}
+                      disabled={isSubmitting}
+                      className="w-full p-4 border-2 border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                      placeholder="$500,000"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="down_payment_percentage" className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
+                      🏠 Down Payment
+                    </label>
+                    <select
+                      id="down_payment_percentage"
+                      name="down_payment_percentage"
+                      value={formData.down_payment_percentage}
+                      onChange={handleChange}
+                      disabled={isSubmitting}
+                      className="w-full p-4 border-2 border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                    >
+                      <option value="">Select down payment</option>
+                      <option value="5%">5% - 9%</option>
+                      <option value="10%">10% - 14%</option>
+                      <option value="15%">15% - 19%</option>
+                      <option value="20%">20% or more</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="employment_type" className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
+                      💼 Employment Type
+                    </label>
+                    <select
+                      id="employment_type"
+                      name="employment_type"
+                      value={formData.employment_type}
+                      onChange={handleChange}
+                      disabled={isSubmitting}
+                      className="w-full p-4 border-2 border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                    >
+                      <option value="">Select employment type</option>
+                      <option value="Full-time employed">Full-time employed</option>
+                      <option value="Part-time employed">Part-time employed</option>
+                      <option value="Self-employed">Self-employed</option>
+                      <option value="Contract/Freelance">Contract/Freelance</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="credit_score_range" className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
+                      ⭐ Credit Score Range
+                    </label>
+                    <select
+                      id="credit_score_range"
+                      name="credit_score_range"
+                      value={formData.credit_score_range}
+                      onChange={handleChange}
+                      disabled={isSubmitting}
+                      className="w-full p-4 border-2 border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                    >
+                      <option value="">Select credit range</option>
+                      <option value="Excellent (750+)">Excellent (750+)</option>
+                      <option value="Good (650-749)">Good (650-749)</option>
+                      <option value="Fair (600-649)">Fair (600-649)</option>
+                      <option value="Building Credit (Under 600)">Building Credit (Under 600)</option>
+                    </select>
+                  </div>
                 </div>
-              </div>
 
-              <div className="text-center">
-                <Button
-                  size="lg"
-                  className="bg-gradient-to-r from-primary to-primary-glow text-primary-foreground hover:from-primary-glow hover:to-primary px-10 py-5 text-xl font-bold rounded-full shadow-2xl"
-                >
-                  🎯 Get My Pre-Approval Now
-                </Button>
-                <div className="flex flex-wrap justify-center gap-4 mt-6">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <span className="text-lg">✅</span>
-                    <span>No Credit Impact</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <span className="text-lg">🛡️</span>
-                    <span>Secure & Confidential</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <span className="text-lg">⚡</span>
-                    <span>Takes 2 Minutes</span>
+                <div className="mb-8">
+                  <label className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
+                    🏡 Mortgage Type
+                  </label>
+                  <div className="grid md:grid-cols-3 gap-4">
+                    {["Purchase", "Refinance", "Renewal"].map((type) => (
+                      <label
+                        key={type}
+                        className="flex items-center p-4 border-2 border-input rounded-xl hover:bg-card-hover hover:border-primary cursor-pointer transition-all duration-200"
+                      >
+                        <input
+                          type="radio"
+                          name="mortgage_type"
+                          value={type}
+                          checked={formData.mortgage_type === type}
+                          onChange={handleChange}
+                          disabled={isSubmitting}
+                          className="mr-3 accent-primary"
+                        />
+                        <span className="font-semibold text-foreground">
+                          {type === "Purchase" && "🏠 "}
+                          {type === "Refinance" && "🔄 "}
+                          {type === "Renewal" && "📋 "}
+                          {type}
+                        </span>
+                      </label>
+                    ))}
                   </div>
                 </div>
-              </div>
+
+                <div className="text-center">
+                  <Button
+                    type="submit"
+                    size="lg"
+                    disabled={isSubmitting}
+                    className="bg-gradient-to-r from-primary to-primary-glow text-primary-foreground hover:from-primary-glow hover:to-primary px-10 py-5 text-xl font-bold rounded-full shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? '⏳ Submitting...' : '🎯 Get My Pre-Approval Now'}
+                  </Button>
+                  <div className="flex flex-wrap justify-center gap-4 mt-6">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <span className="text-lg">✅</span>
+                      <span>No Credit Impact</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <span className="text-lg">🛡️</span>
+                      <span>Secure & Confidential</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <span className="text-lg">⚡</span>
+                      <span>Takes 2 Minutes</span>
+                    </div>
+                  </div>
+                </div>
+              </form>
             </CardContent>
           </Card>
         </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { use, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { Button } from '@/components/ui/button';
@@ -71,18 +71,14 @@ interface Application {
 
 const STATUS_COLORS: Record<string, string> = {
   submitted: 'bg-blue-500',
-  reviewing: 'bg-yellow-500',
   approved: 'bg-green-500',
   rejected: 'bg-red-500',
-  pending: 'bg-gray-500',
 };
 
 const STATUS_ICONS: Record<string, any> = {
   submitted: FileText,
-  reviewing: Clock,
   approved: CheckCircle,
   rejected: XCircle,
-  pending: Clock,
 };
 
 // Inner component that uses React Query hooks
@@ -555,10 +551,8 @@ function ApplicationViewerContent({ id }: { id: string }) {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="submitted">Submitted</SelectItem>
-                  <SelectItem value="reviewing">Reviewing</SelectItem>
                   <SelectItem value="approved">Approved</SelectItem>
                   <SelectItem value="rejected">Rejected</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -615,10 +609,12 @@ function ApplicationViewerContent({ id }: { id: string }) {
 }
 
 // Main page component that provides the AdminLayout wrapper
-export default function ApplicationDetailPage({ params }: { params: { id: string } }) {
+export default function ApplicationDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  
   return (
     <AdminLayout>
-      <ApplicationViewerContent id={params.id} />
+      <ApplicationViewerContent id={id} />
     </AdminLayout>
   );
 }

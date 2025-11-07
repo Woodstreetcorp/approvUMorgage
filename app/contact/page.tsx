@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import { Metadata } from "next";
 import Hero from "@/components/sections/Hero";
 import FAQBlock from "@/components/sections/FAQBlock";
@@ -6,12 +9,71 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 
-export const metadata: Metadata = {
-  title: "Contact Us | approvU Mortgage - Get Expert Mortgage Help",
-  description: "Get in touch with approvU mortgage experts. We're here to help you navigate your home financing journey with personalized support and guidance.",
-};
-
 export default function Contact() {
+  const [formData, setFormData] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone: '',
+    message: '',
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<{
+    type: 'success' | 'error' | null;
+    message: string;
+  }>({ type: null, message: '' });
+
+  const handleChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear status when user starts typing again
+    if (submitStatus.type) {
+      setSubmitStatus({ type: null, message: '' });
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitStatus({ type: null, message: '' });
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          form_type: 'contact_us',
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to submit form');
+      }
+
+      setSubmitStatus({
+        type: 'success',
+        message: result.message || 'Thank you for contacting us! We will get back to you soon.',
+      });
+
+      // Clear form
+      setFormData({
+        first_name: '',
+        last_name: '',
+        email: '',
+        phone: '',
+        message: '',
+      });
+    } catch (error: any) {
+      setSubmitStatus({
+        type: 'error',
+        message: error.message || 'Something went wrong. Please try again.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   const faqs = [
     {
       question: "How long does the mortgage approval process take?",
@@ -52,44 +114,93 @@ export default function Contact() {
               <CardTitle className="text-2xl text-primary-600">Send us a message</CardTitle>
             </CardHeader>
             <CardContent>
-              <form className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      First Name
+                      First Name <span className="text-red-500">*</span>
                     </label>
-                    <Input placeholder="John" />
+                    <Input 
+                      placeholder="John" 
+                      value={formData.first_name}
+                      onChange={(e) => handleChange('first_name', e.target.value)}
+                      required
+                      disabled={isSubmitting}
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Last Name
+                      Last Name <span className="text-red-500">*</span>
                     </label>
-                    <Input placeholder="Doe" />
+                    <Input 
+                      placeholder="Doe" 
+                      value={formData.last_name}
+                      onChange={(e) => handleChange('last_name', e.target.value)}
+                      required
+                      disabled={isSubmitting}
+                    />
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email
+                    Email <span className="text-red-500">*</span>
                   </label>
-                  <Input type="email" placeholder="john@example.com" />
+                  <Input 
+                    type="email" 
+                    placeholder="john@example.com" 
+                    value={formData.email}
+                    onChange={(e) => handleChange('email', e.target.value)}
+                    required
+                    disabled={isSubmitting}
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Phone
                   </label>
-                  <Input type="tel" placeholder="(555) 123-4567" />
+                  <Input 
+                    type="tel" 
+                    placeholder="(555) 123-4567" 
+                    value={formData.phone}
+                    onChange={(e) => handleChange('phone', e.target.value)}
+                    disabled={isSubmitting}
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    How can we help?
+                    How can we help? <span className="text-red-500">*</span>
                   </label>
                   <Textarea 
                     placeholder="Tell us about your mortgage needs or questions..."
                     rows={4}
+                    value={formData.message}
+                    onChange={(e) => handleChange('message', e.target.value)}
+                    required
+                    disabled={isSubmitting}
                   />
                 </div>
-                <Button className="w-full bg-primary-600 hover:bg-primary-700">
-                  Send Message
+
+                {/* Status Messages */}
+                {submitStatus.type && (
+                  <div className={`p-4 rounded-lg ${
+                    submitStatus.type === 'success' 
+                      ? 'bg-green-50 border border-green-200' 
+                      : 'bg-red-50 border border-red-200'
+                  }`}>
+                    <p className={`text-sm ${
+                      submitStatus.type === 'success' ? 'text-green-800' : 'text-red-800'
+                    }`}>
+                      {submitStatus.message}
+                    </p>
+                  </div>
+                )}
+
+                <Button 
+                  type="submit"
+                  className="w-full bg-primary-600 hover:bg-primary-700"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Sending...' : 'Send Message'}
                 </Button>
               </form>
             </CardContent>

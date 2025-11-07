@@ -5,7 +5,7 @@ import { isAdmin } from '@/lib/auth/helpers';
 // GET: Fetch single application by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const adminCheck = await isAdmin();
@@ -16,7 +16,7 @@ export async function GET(
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
@@ -29,16 +29,7 @@ export async function GET(
     
     const { data, error } = await supabase
       .from('mortgage_applications')
-      .select(`
-        *,
-        profile:profiles!user_id (
-          id,
-          first_name,
-          last_name,
-          email,
-          phone
-        )
-      `)
+      .select('*')
       .eq('id', id)
       .single();
 
@@ -50,16 +41,23 @@ export async function GET(
       );
     }
 
+    // Fetch profile separately
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('user_id, first_name, last_name, email, phone')
+      .eq('user_id', data.user_id)
+      .single();
+
     // Transform data to include applicant info
     const application = {
       id: data.id,
-      applicant_name: data.profile 
-        ? `${(data.profile as any).first_name || ''} ${(data.profile as any).last_name || ''}`.trim() || 'Unknown'
+      applicant_name: profile 
+        ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Unknown'
         : 'Unknown',
-      applicant_email: (data.profile as any)?.email || '',
-      applicant_phone: (data.profile as any)?.phone || '',
-      applicant_first_name: (data.profile as any)?.first_name || '',
-      applicant_last_name: (data.profile as any)?.last_name || '',
+      applicant_email: profile?.email || '',
+      applicant_phone: profile?.phone || '',
+      applicant_first_name: profile?.first_name || '',
+      applicant_last_name: profile?.last_name || '',
       status: data.status,
       application_type: data.application_type,
       property_address: data.property_address || '',

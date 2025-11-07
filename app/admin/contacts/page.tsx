@@ -92,7 +92,7 @@ function ContactsContent() {
   const stats = {
     total: contacts.length,
     new: contacts.filter((c: ContactSubmission) => c.status === 'new').length,
-    inProgress: contacts.filter((c: ContactSubmission) => c.status === 'in_progress').length,
+    contacted: contacts.filter((c: ContactSubmission) => c.status === 'contacted').length,
     resolved: contacts.filter((c: ContactSubmission) => c.status === 'resolved').length,
   };
 
@@ -143,8 +143,8 @@ function ContactsContent() {
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">In Progress</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">{stats.inProgress}</p>
+              <p className="text-sm text-gray-600">Contacted</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{stats.contacted}</p>
             </div>
             <div className="h-12 w-12 bg-yellow-100 rounded-lg flex items-center justify-center">
               <Clock className="h-6 w-6 text-yellow-600" />
@@ -187,7 +187,7 @@ function ContactsContent() {
               >
                 <option value="all">All Status</option>
                 <option value="new">New</option>
-                <option value="in_progress">In Progress</option>
+                <option value="contacted">Contacted</option>
                 <option value="resolved">Resolved</option>
               </select>
             </div>
@@ -266,15 +266,15 @@ function ContactsContent() {
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           contact.status === 'new'
                             ? 'bg-green-100 text-green-800'
-                            : contact.status === 'in_progress'
+                            : contact.status === 'contacted'
                             ? 'bg-yellow-100 text-yellow-800'
                             : 'bg-gray-100 text-gray-800'
                         }`}
                       >
                         {contact.status === 'new'
                           ? 'New'
-                          : contact.status === 'in_progress'
-                          ? 'In Progress'
+                          : contact.status === 'contacted'
+                          ? 'Contacted'
                           : 'Resolved'}
                       </span>
                     </td>
@@ -393,7 +393,7 @@ function ContactsContent() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="new">New</option>
-                    <option value="in_progress">In Progress</option>
+                    <option value="contacted">Contacted</option>
                     <option value="resolved">Resolved</option>
                   </select>
                 </div>

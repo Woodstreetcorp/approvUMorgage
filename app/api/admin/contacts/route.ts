@@ -42,15 +42,27 @@ export async function PUT(request: Request) {
       );
     }
 
+    // Validate status value
+    const validStatuses = ['new', 'contacted', 'resolved'];
+    if (!validStatuses.includes(status)) {
+      return NextResponse.json(
+        { error: 'Invalid status value' },
+        { status: 400 }
+      );
+    }
+
     const supabase = createAdminClient();
     const { data, error } = await supabase
       .from('contact_submissions')
-      .update({ status, updated_at: new Date().toISOString() })
+      .update({ status })
       .eq('id', id)
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase error:', error);
+      throw error;
+    }
 
     return NextResponse.json({ data });
   } catch (error) {

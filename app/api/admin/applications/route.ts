@@ -6,8 +6,8 @@ import { isAdmin } from '@/lib/auth/helpers';
 export async function GET(request: NextRequest) {
   try {
     // Check admin permission
-    const adminCheck = await isAdmin();
-    if (!adminCheck.isAdmin) {
+    const isAdminUser = await isAdmin();
+    if (!isAdminUser) {
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
         { status: 403 }
@@ -23,19 +23,10 @@ export async function GET(request: NextRequest) {
 
     const supabase = createAdminClient();
     
-    // Build query with joins to get applicant profile
+    // Build query - we'll fetch profiles separately since there's no FK relationship
     let query = supabase
       .from('mortgage_applications')
-      .select(`
-        *,
-        profile:profiles!mortgage_applications_user_id_fkey (
-          id,
-          first_name,
-          last_name,
-          email,
-          phone
-        )
-      `, { count: 'exact' });
+      .select('*', { count: 'exact' });
 
     // Apply filters
     if (status && status !== 'all') {
@@ -64,32 +55,53 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Fetch profiles for all user_ids
+    const userIds = data?.map((app: any) => app.user_id).filter(Boolean) || [];
+    let profilesMap: Record<string, any> = {};
+    
+    if (userIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, first_name, last_name, email, phone')
+        .in('user_id', userIds);
+      
+      if (profiles) {
+        profilesMap = profiles.reduce((acc: any, profile: any) => {
+          acc[profile.user_id] = profile;
+          return acc;
+        }, {});
+      }
+    }
+
     // Transform data to include applicant info
-    const applications = data?.map((app: any) => ({
-      id: app.id,
-      applicant_name: app.profile 
-        ? `${app.profile.first_name || ''} ${app.profile.last_name || ''}`.trim() || 'Unknown'
-        : 'Unknown',
-      applicant_email: app.profile?.email || '',
-      applicant_phone: app.profile?.phone || '',
-      status: app.status,
-      application_type: app.application_type,
-      property_address: app.property_address || '',
-      property_city: app.property_city || '',
-      property_province: app.property_province || '',
-      property_postal_code: app.property_postal_code || '',
-      property_value: app.property_value,
-      down_payment: app.down_payment,
-      credit_score: app.credit_score,
-      annual_income: app.annual_income,
-      employment_status: app.employment_status,
-      notes: app.notes,
-      submitted_at: app.submitted_at,
-      approved_at: app.approved_at,
-      created_at: app.created_at,
-      updated_at: app.updated_at,
-      user_id: app.user_id,
-    })) || [];
+    const applications = data?.map((app: any) => {
+      const profile = profilesMap[app.user_id];
+      return {
+        id: app.id,
+        applicant_name: profile 
+          ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Unknown'
+          : 'Unknown',
+        applicant_email: profile?.email || '',
+        applicant_phone: profile?.phone || '',
+        status: app.status,
+        application_type: app.application_type,
+        property_address: app.property_address || '',
+        property_city: app.property_city || '',
+        property_province: app.property_province || '',
+        property_postal_code: app.property_postal_code || '',
+        property_value: app.property_value,
+        down_payment: app.down_payment,
+        credit_score: app.credit_score,
+        annual_income: app.annual_income,
+        employment_status: app.employment_status,
+        notes: app.notes,
+        submitted_at: app.submitted_at,
+        approved_at: app.approved_at,
+        created_at: app.created_at,
+        updated_at: app.updated_at,
+        user_id: app.user_id,
+      };
+    }) || [];
 
     return NextResponse.json({
       applications,
@@ -110,8 +122,8 @@ export async function GET(request: NextRequest) {
 // GET single application by ID
 export async function GET_BY_ID(id: string) {
   try {
-    const adminCheck = await isAdmin();
-    if (!adminCheck.isAdmin) {
+    const isAdminUser = await isAdmin();
+    if (!isAdminUser) {
       return { error: 'Unauthorized', status: 403 };
     }
 
@@ -119,16 +131,7 @@ export async function GET_BY_ID(id: string) {
     
     const { data, error } = await supabase
       .from('mortgage_applications')
-      .select(`
-        *,
-        profile:profiles!mortgage_applications_user_id_fkey (
-          id,
-          first_name,
-          last_name,
-          email,
-          phone
-        )
-      `)
+      .select('*')
       .eq('id', id)
       .single();
 
@@ -137,14 +140,21 @@ export async function GET_BY_ID(id: string) {
       return { error: 'Application not found', status: 404 };
     }
 
+    // Fetch profile separately
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('user_id, first_name, last_name, email, phone')
+      .eq('user_id', data.user_id)
+      .single();
+
     return {
       data: {
         ...data,
-        applicant_name: data.profile 
-          ? `${data.profile.first_name || ''} ${data.profile.last_name || ''}`.trim() || 'Unknown'
+        applicant_name: profile 
+          ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Unknown'
           : 'Unknown',
-        applicant_email: data.profile?.email || '',
-        applicant_phone: data.profile?.phone || '',
+        applicant_email: profile?.email || '',
+        applicant_phone: profile?.phone || '',
       },
       status: 200,
     };
@@ -157,8 +167,8 @@ export async function GET_BY_ID(id: string) {
 // PUT: Update application (mainly for status changes)
 export async function PUT(request: NextRequest) {
   try {
-    const adminCheck = await isAdmin();
-    if (!adminCheck.isAdmin) {
+    const isAdminUser = await isAdmin();
+    if (!isAdminUser) {
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
         { status: 403 }
@@ -175,12 +185,20 @@ export async function PUT(request: NextRequest) {
       );
     }
 
+    // Validate status value - match database constraint
+    // Only these statuses are allowed by the database
+    const validStatuses = ['submitted', 'approved', 'rejected'];
+    if (status && !validStatuses.includes(status)) {
+      return NextResponse.json(
+        { error: `Invalid status value. Must be one of: ${validStatuses.join(', ')}` },
+        { status: 400 }
+      );
+    }
+
     const supabase = createAdminClient();
 
-    // Prepare update data
-    const updateData: any = {
-      updated_at: new Date().toISOString(),
-    };
+    // Prepare update data - don't manually set updated_at, let DB handle it
+    const updateData: any = {};
 
     if (status) {
       updateData.status = status;
@@ -195,6 +213,17 @@ export async function PUT(request: NextRequest) {
       updateData.notes = notes;
     }
 
+    // If nothing to update, return error
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json(
+        { error: 'No data to update' },
+        { status: 400 }
+      );
+    }
+
+    console.log('Attempting to update application:', id);
+    console.log('Update data:', JSON.stringify(updateData, null, 2));
+
     const { data, error } = await supabase
       .from('mortgage_applications')
       .update(updateData)
@@ -203,12 +232,20 @@ export async function PUT(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error('Error updating application:', error);
+      console.error('❌ Error updating application:', error);
+      console.error('Update data:', updateData);
+      console.error('Application ID:', id);
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
+      console.error('Error details:', error.details);
+      console.error('Error hint:', error.hint);
       return NextResponse.json(
-        { error: 'Failed to update application' },
+        { error: 'Failed to update application', details: error.message, code: error.code },
         { status: 500 }
       );
     }
+
+    console.log('✅ Application updated successfully:', data);
 
     return NextResponse.json({
       message: 'Application updated successfully',
@@ -226,8 +263,8 @@ export async function PUT(request: NextRequest) {
 // DELETE: Delete an application
 export async function DELETE(request: NextRequest) {
   try {
-    const adminCheck = await isAdmin();
-    if (!adminCheck.isAdmin) {
+    const isAdminUser = await isAdmin();
+    if (!isAdminUser) {
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
         { status: 403 }

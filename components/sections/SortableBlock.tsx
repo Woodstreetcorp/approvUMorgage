@@ -59,9 +59,7 @@ export function SortableBlock({
       style={style}
       className={`group relative ${
         isSelected ? 'ring-2 ring-primary' : ''
-      } ${isDragging ? 'cursor-grabbing' : ''} ${
-        !isVisible ? 'opacity-50' : ''
-      }`}
+      } ${isDragging ? 'cursor-grabbing' : ''}`}
     >
       <div className="flex items-center gap-3 p-4">
         {/* Drag Handle */}
@@ -170,6 +168,177 @@ export function SortableBlock({
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Block Preview Section (toggle with eye icon) */}
+      {isVisible && (
+        <div className="border-t bg-card p-4">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-medium flex items-center gap-2">
+              <Eye className="h-4 w-4" />
+              Block Preview
+            </span>
+          </div>
+          <div 
+            className="rounded-lg border p-4"
+            style={{
+              backgroundColor: block.settings?.backgroundColor || 'transparent',
+              padding: block.settings?.padding || '1rem',
+            }}
+          >
+            {block.type === 'hero' && (
+              <div className={`text-${block.settings?.alignment || 'left'}`}>
+                <h1 className="text-3xl font-bold mb-3">{block.content?.headline || 'Hero Headline'}</h1>
+                <p className="text-lg mb-4">{block.content?.subtitle || 'Hero subtitle text'}</p>
+                {block.content?.ctaText && (
+                  <Button size="sm">{block.content.ctaText}</Button>
+                )}
+              </div>
+            )}
+            {block.type === 'text' && (
+              <div className={`text-${block.settings?.alignment || 'left'}`}>
+                {block.content?.heading && (
+                  <h2 className="text-xl font-bold mb-3">{block.content.heading}</h2>
+                )}
+                <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: block.content?.body || 'Text content' }} />
+              </div>
+            )}
+            {block.type === 'cta' && (
+              <div className={`text-${block.settings?.alignment || 'center'}`}>
+                <h2 className="text-2xl font-bold mb-3">{block.content?.heading || 'Call to Action'}</h2>
+                <p className="text-base mb-4">{block.content?.description || 'CTA description'}</p>
+                <Button size="sm">{block.content?.buttonText || 'Click Here'}</Button>
+              </div>
+            )}
+            {block.type === 'features' && (
+              <div>
+                {block.content?.heading && (
+                  <h2 className="text-2xl font-bold mb-6 text-center">{block.content.heading}</h2>
+                )}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {(block.content?.features || [{}, {}, {}]).map((feature: any, idx: number) => (
+                    <div key={idx} className="text-center">
+                      <div className="text-3xl mb-2">{feature.icon || '✨'}</div>
+                      <h3 className="font-semibold mb-1">{feature.title || `Feature ${idx + 1}`}</h3>
+                      <p className="text-xs text-muted-foreground">{feature.description || 'Feature description'}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {/* {block.type === 'content' && (
+              <div className={`text-${block.settings?.alignment || 'left'}`}>
+                {block.content?.imageUrl && (
+                  <div className={`mb-3 ${block.content.imagePosition === 'right' ? 'float-right ml-3' : block.content.imagePosition === 'left' ? 'float-left mr-3' : ''}`}>
+                    <img src={block.content.imageUrl} alt="Content" className="rounded-lg max-w-xs" />
+                  </div>
+                )}
+                <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: block.content?.html || '<p>Start writing your content here...</p>' }} />
+              </div>
+            )} */}
+            {block.type === 'cards' && (
+              <div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {(block.content?.cards || [{}, {}, {}]).map((card: any, idx: number) => (
+                    <Card key={idx} className="overflow-hidden">
+                      {card.image && (
+                        <img src={card.image} alt={card.title || `Card ${idx + 1}`} className="w-full h-32 object-cover" />
+                      )}
+                      <div className="p-3">
+                        <h3 className="font-semibold text-sm mb-1">{card.title || `Card Title ${idx + 1}`}</h3>
+                        <p className="text-xs text-muted-foreground">{card.description || 'Card description'}</p>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+            {block.type === 'faq' && (
+              <div className="space-y-2">
+                {(block.content?.faqs || [{}, {}, {}]).map((faq: any, idx: number) => (
+                  <div key={idx} className="border rounded-lg p-3">
+                    <div className="flex items-start justify-between">
+                      <h3 className="font-semibold text-sm pr-4">{faq.question || `Question ${idx + 1}?`}</h3>
+                      <Badge variant="outline" className="text-xs">▼</Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">{faq.answer || 'Sample answer'}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+            {block.type === 'testimonials' && (
+              <div className="space-y-3">
+                {(block.content?.testimonials || [{}, {}]).map((testimonial: any, idx: number) => (
+                  <Card key={idx} className="p-3">
+                    <div className="flex items-start gap-3">
+                      <img 
+                        src={testimonial.avatar || 'https://placehold.co/100x100'} 
+                        alt={testimonial.author || 'Author'} 
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                      <div className="flex-1">
+                        <p className="text-sm mb-2 italic">"{testimonial.quote || 'Testimonial quote'}"</p>
+                        <div className="text-xs">
+                          <div className="font-semibold">{testimonial.author || 'John Doe'}</div>
+                          <div className="text-muted-foreground">{testimonial.role || 'Customer'}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+            {block.type === 'steps' && (
+              <div className="space-y-3">
+                {(block.content?.steps || [{}, {}, {}]).map((step: any, idx: number) => (
+                  <div key={idx} className="flex gap-3">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">
+                      {step.number || idx + 1}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-sm mb-1">{step.title || `Step ${idx + 1}`}</h3>
+                      <p className="text-xs text-muted-foreground">{step.description || 'Step description'}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {block.type === 'video' && (
+              <div>
+                <div className="aspect-video bg-muted rounded-lg flex items-center justify-center mb-2">
+                  <div className="text-center">
+                    <div className="text-4xl mb-1">🎥</div>
+                    <p className="text-xs text-muted-foreground px-2 break-all">{block.content?.videoUrl || 'No URL'}</p>
+                  </div>
+                </div>
+                {block.content?.caption && (
+                  <p className="text-xs text-muted-foreground text-center">{block.content.caption}</p>
+                )}
+              </div>
+            )}
+            {block.type === 'image' && (
+              <div className="grid grid-cols-3 gap-2">
+                {(block.content?.images || [{}, {}, {}]).map((img: any, idx: number) => (
+                  <div key={idx} className="aspect-square bg-muted rounded-lg overflow-hidden">
+                    <img 
+                      src={img.url || 'https://placehold.co/400x300'} 
+                      alt={img.alt || `Image ${idx + 1}`} 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+            {!['hero', 'text', 'cta', 'features', 'cards', 'faq', 'testimonials', 'steps', 'video', 'image'].includes(block.type) && (
+              <div className="text-center text-muted-foreground">
+                <p className="text-xs mb-2">Preview not available for {block.type} block</p>
+                <pre className="text-xs text-left bg-muted p-2 rounded overflow-auto max-h-40">
+                  {JSON.stringify(block.content, null, 2)}
+                </pre>
+              </div>
+            )}
           </div>
         </div>
       )}

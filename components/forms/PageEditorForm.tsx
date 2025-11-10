@@ -45,7 +45,10 @@ const pageSchema = z.object({
 type PageFormData = z.infer<typeof pageSchema>;
 
 interface PageEditorFormProps {
-  initialData?: Partial<PageFormData> & { id?: string };
+  initialData?: Partial<PageFormData> & { 
+    id?: string;
+    content_blocks?: ContentBlock[] | string;
+  };
   isNew?: boolean;
 }
 
@@ -113,6 +116,36 @@ export function PageEditorForm({ initialData, isNew = false }: PageEditorFormPro
       setValue('slug', generatedSlug, { shouldValidate: true });
     }
   }, [title, isNew, slug, setValue]);
+
+  // Load content blocks from initialData when editing existing page
+  useEffect(() => {
+    console.log('🔍 PageEditorForm - initialData:', initialData);
+    console.log('📦 content_blocks in initialData:', initialData?.content_blocks);
+    
+    if (initialData?.content_blocks) {
+      try {
+        // content_blocks might be a JSON string or already parsed object
+        const blocks = typeof initialData.content_blocks === 'string' 
+          ? JSON.parse(initialData.content_blocks)
+          : initialData.content_blocks;
+        
+        console.log('✅ Parsed blocks:', blocks);
+        console.log('📊 Is array:', Array.isArray(blocks));
+        console.log('🔢 Block count:', Array.isArray(blocks) ? blocks.length : 'N/A');
+        
+        if (Array.isArray(blocks)) {
+          setContentBlocks(blocks);
+          console.log('✅ Content blocks loaded successfully!');
+        } else {
+          console.warn('⚠️ Blocks is not an array:', typeof blocks);
+        }
+      } catch (error) {
+        console.error('❌ Failed to load content blocks:', error);
+      }
+    } else {
+      console.log('ℹ️ No content_blocks found in initialData');
+    }
+  }, [initialData?.content_blocks]);
 
   // Auto-save functionality (every 10 seconds if dirty and not new)
   useEffect(() => {

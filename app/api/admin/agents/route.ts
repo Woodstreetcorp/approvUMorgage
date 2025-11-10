@@ -21,7 +21,27 @@ export async function GET(request: NextRequest) {
     const supabase = createAdminClient()
     const { searchParams } = new URL(request.url)
     const isActive = searchParams.get('is_active')
+    const id = searchParams.get('id')
 
+    // If ID is provided, fetch single agent
+    if (id) {
+      const { data, error } = await supabase
+        .from('agents')
+        .select('*')
+        .eq('id', id)
+        .single()
+
+      if (error) {
+        return NextResponse.json(
+          { error: 'Failed to fetch agent', details: error.message },
+          { status: 500 }
+        )
+      }
+
+      return NextResponse.json({ agents: [data] })
+    }
+
+    // Otherwise, fetch all agents
     let query = supabase
       .from('agents')
       .select('*')

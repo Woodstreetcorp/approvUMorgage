@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { use, useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { AdminLayout } from '@/components/layout/AdminLayout';
@@ -74,7 +74,7 @@ function AgentEditorContent({ id }: { id?: string }) {
   });
 
   // Fetch agent if editing
-  const { data: agentData, isLoading } = useQuery({
+  const { data: agentData, isLoading, error } = useQuery({
     queryKey: ['agent', id],
     queryFn: async () => {
       const response = await fetch(`/api/admin/agents?id=${id}`);
@@ -118,8 +118,12 @@ function AgentEditorContent({ id }: { id?: string }) {
         rating: data.rating ? Number(data.rating) : null,
         review_count: data.review_count ? Number(data.review_count) : null,
         display_order: data.display_order ? Number(data.display_order) : null,
-        specialties: data.specialties || null,
-        languages: data.languages || null,
+        specialties: data.specialties 
+          ? data.specialties.split(',').map(s => s.trim()).filter(s => s) 
+          : null,
+        languages: data.languages 
+          ? data.languages.split(',').map(s => s.trim()).filter(s => s) 
+          : null,
       };
 
       if (isEditMode) {
@@ -568,10 +572,12 @@ function AgentEditorContent({ id }: { id?: string }) {
 }
 
 // Main page component for editing existing agent
-export default function AgentEditPage({ params }: { params: { id: string } }) {
+export default function AgentEditPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  
   return (
     <AdminLayout>
-      <AgentEditorContent id={params.id} />
+      <AgentEditorContent id={id} />
     </AdminLayout>
   );
 }

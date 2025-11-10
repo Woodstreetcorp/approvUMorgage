@@ -183,10 +183,20 @@ function ContentBlockRenderer({ block }: { block: ContentBlock }) {
 
     case 'text':
     case 'paragraph':
+    case 'content':
       return (
         <div style={blockStyle}>
           {title && (
             <h3 className="text-2xl font-semibold mb-4">{title}</h3>
+          )}
+          {content?.imageUrl && (
+            <div className={`mb-6 ${content.imagePosition === 'right' ? 'float-right ml-6' : content.imagePosition === 'left' ? 'float-left mr-6' : ''}`}>
+              <img 
+                src={content.imageUrl} 
+                alt={title || 'Content image'} 
+                className="rounded-lg max-w-md shadow-md"
+              />
+            </div>
           )}
           <div 
             className="prose prose-lg max-w-none dark:prose-invert"
@@ -336,6 +346,138 @@ function ContentBlockRenderer({ block }: { block: ContentBlock }) {
                     <p className="text-muted-foreground">{item.answer}</p>
                   </CardContent>
                 </Card>
+              ))}
+            </div>
+          )}
+          {content?.faqs && Array.isArray(content.faqs) && (
+            <div className="space-y-4">
+              {content.faqs.map((faq: any, index: number) => (
+                <Card key={index}>
+                  <CardContent className="p-6">
+                    <h4 className="text-lg font-semibold mb-2">
+                      {faq.question}
+                    </h4>
+                    <p className="text-muted-foreground">{faq.answer}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+
+    case 'features':
+      return (
+        <div style={blockStyle}>
+          {title && (
+            <h3 className="text-3xl font-bold mb-8 text-center">{title}</h3>
+          )}
+          {content?.heading && (
+            <h3 className="text-3xl font-bold mb-8 text-center">{content.heading}</h3>
+          )}
+          {content?.features && Array.isArray(content.features) && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {content.features.map((feature: any, index: number) => (
+                <Card key={index}>
+                  <CardContent className="p-6 text-center">
+                    <div className="text-5xl mb-4">{feature.icon || '✨'}</div>
+                    <h4 className="text-xl font-semibold mb-2">{feature.title || `Feature ${index + 1}`}</h4>
+                    <p className="text-muted-foreground">{feature.description || 'Feature description'}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+
+    case 'cards':
+      return (
+        <div style={blockStyle}>
+          {title && (
+            <h3 className="text-3xl font-bold mb-8 text-center">{title}</h3>
+          )}
+          {content?.cards && Array.isArray(content.cards) && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {content.cards.map((card: any, index: number) => (
+                <Card key={index} className="overflow-hidden">
+                  {card.image && (
+                    <img 
+                      src={card.image} 
+                      alt={card.title || `Card ${index + 1}`} 
+                      className="w-full h-48 object-cover"
+                    />
+                  )}
+                  <CardContent className="p-6">
+                    <h4 className="text-xl font-semibold mb-2">{card.title || `Card ${index + 1}`}</h4>
+                    <p className="text-muted-foreground mb-4">{card.description || 'Card description'}</p>
+                    {card.link && (
+                      <a 
+                        href={card.link} 
+                        className="text-primary hover:underline font-semibold"
+                      >
+                        Learn More →
+                      </a>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+
+    case 'testimonials':
+      return (
+        <div style={blockStyle}>
+          {title && (
+            <h3 className="text-3xl font-bold mb-8 text-center">{title}</h3>
+          )}
+          {content?.testimonials && Array.isArray(content.testimonials) && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {content.testimonials.map((testimonial: any, index: number) => (
+                <Card key={index}>
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-4 mb-4">
+                      <img 
+                        src={testimonial.avatar || 'https://placehold.co/100x100'} 
+                        alt={testimonial.author || 'Customer'} 
+                        className="w-12 h-12 rounded-full object-cover"
+                      />
+                      <div>
+                        <p className="font-semibold">{testimonial.author || 'Anonymous'}</p>
+                        <p className="text-sm text-muted-foreground">{testimonial.role || 'Customer'}</p>
+                      </div>
+                    </div>
+                    <blockquote className="text-lg italic text-muted-foreground">
+                      "{testimonial.quote || 'Great service!'}"
+                    </blockquote>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+
+    case 'steps':
+      return (
+        <div style={blockStyle}>
+          {title && (
+            <h3 className="text-3xl font-bold mb-8 text-center">{title}</h3>
+          )}
+          {content?.steps && Array.isArray(content.steps) && (
+            <div className="space-y-6">
+              {content.steps.map((step: any, index: number) => (
+                <div key={index} className="flex gap-6">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold">
+                    {step.number || index + 1}
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-xl font-semibold mb-2">{step.title || `Step ${index + 1}`}</h4>
+                    <p className="text-muted-foreground">{step.description || 'Step description'}</p>
+                  </div>
+                </div>
               ))}
             </div>
           )}

@@ -28,13 +28,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
 
   useEffect(() => {
-    // Get initial session
+    const supabase = createClient()
+    let isMounted = true
+    let timeoutId: NodeJS.Timeout
+
+    // Get initial session with timeout protection
     const initAuth = async () => {
       try {
+        // Set a backup timeout in case auth hangs
+        timeoutId = setTimeout(() => {
+          if (isMounted && loading) {
+            console.warn('Auth initialization timeout - forcing loading to false')
+            setLoading(false)
+          }
+        }, 15000) // 15 second timeout
+
         const { data: { session: initialSession } } = await supabase.auth.getSession()
+        
+        if (!isMounted) return
+
         setSession(initialSession)
         setUser(initialSession?.user ?? null)
 
@@ -44,8 +58,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (error) {
         console.error('Error getting session:', error)
+        if (isMounted) {
+          setSession(null)
+          setUser(null)
+          setIsAdmin(false)
+        }
       } finally {
-        setLoading(false)
+        if (isMounted) {
+          clearTimeout(timeoutId)
+          setLoading(false)
+        }
       }
     }
 
@@ -55,6 +77,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
+      if (!isMounted) return
+
       setSession(newSession)
       setUser(newSession?.user ?? null)
 
@@ -70,12 +94,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })
 
     return () => {
+      isMounted = false
+      clearTimeout(timeoutId)
       subscription.unsubscribe()
     }
-  }, [router, supabase])
+  }, [router])
 
   // Check if user has admin role
   const checkAdminStatus = async (userId: string) => {
+    const supabase = createClient()
     try {
       console.log('Checking admin status for user:', userId)
       
@@ -117,6 +144,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Sign in with email and password
   const signIn = async (email: string, password: string) => {
+    const supabase = createClient()
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -131,6 +159,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Sign up with email and password
   const signUp = async (email: string, password: string, metadata?: any) => {
+    const supabase = createClient()
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -144,6 +173,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Sign out
   const signOut = async () => {
+    const supabase = createClient()
     await supabase.auth.signOut()
     setIsAdmin(false)
     router.push('/')

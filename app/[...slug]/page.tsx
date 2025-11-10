@@ -7,14 +7,15 @@ import { Metadata } from 'next';
 export const dynamic = 'force-dynamic';
 
 interface PageProps {
-  params: {
+  params: Promise<{
     slug: string[];
-  };
+  }>;
 }
 
 // Generate metadata for the page
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const slug = params.slug.join('/');
+  const { slug: slugArray } = await params;
+  const slug = slugArray.join('/');
   const supabase = await createServerSupabaseClient();
 
   const { data: page } = await supabase
@@ -46,7 +47,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 // Main page component
 export default async function DynamicPage({ params }: PageProps) {
-  const slug = params.slug.join('/');
+  const { slug: slugArray } = await params;
+  const slug = slugArray.join('/');
   const supabase = await createServerSupabaseClient();
 
   console.log('Looking for page with slug:', slug);

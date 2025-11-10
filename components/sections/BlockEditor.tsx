@@ -17,6 +17,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { ColorPicker } from '@/components/ui/color-picker';
 import { Save, X } from 'lucide-react';
 
 interface BlockEditorProps {
@@ -393,26 +394,16 @@ export function BlockEditor({ block, open, onClose, onSave }: BlockEditorProps) 
 
     return (
       <div className="space-y-4">
-        <div>
-          <Label htmlFor="backgroundColor">Background Color</Label>
-          <Input
-            id="backgroundColor"
-            type="text"
-            value={settings?.backgroundColor || ''}
-            onChange={(e) => handleSettingChange('backgroundColor', e.target.value)}
-            placeholder="#ffffff or transparent"
-          />
-        </div>
-        <div>
-          <Label htmlFor="textColor">Text Color</Label>
-          <Input
-            id="textColor"
-            type="text"
-            value={settings?.textColor || ''}
-            onChange={(e) => handleSettingChange('textColor', e.target.value)}
-            placeholder="#000000"
-          />
-        </div>
+        <ColorPicker
+          label="Background Color"
+          value={settings?.backgroundColor || '#ffffff'}
+          onChange={(color) => handleSettingChange('backgroundColor', color)}
+        />
+        <ColorPicker
+          label="Text Color"
+          value={settings?.textColor || '#000000'}
+          onChange={(color) => handleSettingChange('textColor', color)}
+        />
         <div>
           <Label htmlFor="padding">Padding</Label>
           <select

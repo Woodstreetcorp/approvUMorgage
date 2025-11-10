@@ -144,19 +144,19 @@ const blockTemplates: BlockTemplate[] = [
       html: '<p>Start writing your content here...</p>',
     },
   },
-  {
-    id: 'content-image-text',
-    type: 'content',
-    title: 'Image + Text',
-    description: 'Image with accompanying text',
-    category: 'content',
-    icon: '🖼️',
-    defaultContent: {
-      imageUrl: 'https://placehold.co/600x400',
-      imagePosition: 'left',
-      html: '<p>Your content goes here...</p>',
-    },
-  },
+  // {
+  //   id: 'content-image-text',
+  //   type: 'content',
+  //   title: 'Image + Text',
+  //   description: 'Image with accompanying text',
+  //   category: 'content',
+  //   icon: '🖼️',
+  //   defaultContent: {
+  //     imageUrl: 'https://placehold.co/600x400',
+  //     imagePosition: 'left',
+  //     html: '<p>Your content goes here...</p>',
+  //   },
+  // },
 
   // Card Blocks
   {

@@ -10,7 +10,7 @@ interface GoogleAnalyticsProps {
 }
 
 export function GoogleAnalytics({ measurementId }: GoogleAnalyticsProps) {
-  // Don't load in development
+  // Don't load analytics in development mode
   if (process.env.NODE_ENV === 'development') {
     return null
   }

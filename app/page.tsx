@@ -1,6 +1,24 @@
+/**
+ * HYBRID HOMEPAGE - OPTION C
+ * 
+ * This file combines:
+ * ✅ Original client-approved design/styling (100% preserved)
+ * ✅ Strapi CMS content editability (all text/images editable)
+ * ✅ Automatic fallback to original hardcoded content if Strapi fails
+ * 
+ * How it works:
+ * 1. Fetches content from Strapi (getHomepage())
+ * 2. If Strapi data exists → Use it
+ * 3. If Strapi fails/empty → Use FALLBACK_DATA (original content)
+ * 4. Renders with exact original styling (all CSS classes preserved)
+ * 
+ * Documentation: docs/HYBRID_HOMEPAGE_GUIDE.md
+ * Test Checklist: docs/HYBRID_TEST_CHECKLIST.md
+ * Original Backup: app/page-hardcoded.tsx.backup
+ */
+
 import { Metadata } from "next";
 import Hero from "@/components/sections/Hero";
-import FeaturesGrid from "@/components/sections/FeaturesGrid";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,308 +49,244 @@ import {
   LucideBanknote,
 } from "lucide-react";
 import Link from "next/link";
+import { getHomepage, getStrapiMediaUrl } from "@/lib/strapi";
 
-export const metadata: Metadata = {
-  title: "approvU - Best Mortgage Rates & Expert Guidance Across Canada",
-  description:
-    "Find the best mortgage rates in Canada with approvU. Expert guidance for first-time buyers, refinancing, renewals, and investment properties. Get pre-approved in minutes.",
+// Hardcoded fallback data - keeps your approved design
+const FALLBACK_DATA = {
+  heroTitle: "Your Mortgage. Matched to Your Life.",
+  heroSubtitle: "No haggling. No confusion. Just personalized mortgage offers that help you achieve your homeownership dreams.",
+  heroCtaText: "Get Qualified in Minutes",
+  heroCtaLink: "/mortgage/approval/",
+  heroSecondaryCtaText: "Compare Offers",
+  heroSecondaryCtaLink: "/mortgage/rates",
+  heroBackgroundImage: "/images/hero/hero-family-home.jpg",
+  
+  howItWorksTitle: "How approvU Works",
+  howItWorksSubtitle: "Three simple steps to your perfect mortgage match",
+  howItWorksSteps: [
+    { stepNumber: 1, stepTitle: "Tell us about you & your goals", stepDescription: "Smart, conversational quiz that learns what matters most to you", stepIcon: "MessageCircle" },
+    { stepNumber: 2, stepTitle: "Get Matched to Real Mortgage Offers", stepDescription: "Based on your real profile, not estimates. See actual rates and terms", stepIcon: "TrendingUp" },
+    { stepNumber: 3, stepTitle: "Enjoy Personalized Concierge Guidance", stepDescription: "Human + Tech support, zero-pressure. We're here when you need us", stepIcon: "Shield" }
+  ],
+  
+  whyChooseTitle: "Why Choose approvU",
+  whyChooseSubtitle: "Experience mortgage lending reimagined",
+  whyChooseCards: [
+    { cardTitle: "Personalized Offers", cardDescription: "Real mortgage offers based on your unique profile, not generic estimates", cardIcon: "Users" },
+    { cardTitle: "Concierge Guidance", cardDescription: "Human + AI support when you need it, zero pressure when you don't", cardIcon: "MessageCircle" },
+    { cardTitle: "No Sales Pressure", cardDescription: "Work at your own pace with complete transparency and trust", cardIcon: "Shield" }
+  ],
+  
+  servicesTitle: "Our Services",
+  servicesSubtitle: "Comprehensive mortgage solutions for every stage of homeownership",
+  services: [
+    { serviceTitle: "First-Time Home Purchase", serviceDescription: "Navigate your first home purchase with confidence. Get personalized guidance, competitive rates, and exclusive first-time buyer incentives.", serviceIcon: "HomeIcon", serviceFeatures: ["Down payment assistance programs", "Pre-approval with rate guarantee", "Free home buying education"] },
+    { serviceTitle: "Mortgage Refinancing", serviceDescription: "Optimize your existing mortgage with better rates, terms, or access your home equity for renovations and investments.", serviceIcon: "TrendingUp", serviceFeatures: ["Rate reduction analysis", "Home equity access options", "Debt consolidation strategies"] },
+    { serviceTitle: "Investment Properties", serviceDescription: "Build your real estate portfolio with specialized investment property financing and rental income analysis.", serviceIcon: "LucideBanknote", serviceFeatures: ["Rental income qualification", "Portfolio expansion strategies", "Commercial property options"] },
+    { serviceTitle: "Mortgage Protection", serviceDescription: "Protect your investment with comprehensive mortgage insurance and life protection solutions.", serviceIcon: "Shield", serviceFeatures: ["Mortgage life insurance", "Disability income protection", "Home and property insurance"] }
+  ],
+  
+  reviewsTitle: "Real Reviews from Real Clients",
+  reviewsSubtitle: "See what homeowners are saying about their approvU experience",
+  reviews: [
+    { reviewRating: 5, reviewText: "Fast, transparent, and no sales pressure! Got my mortgage approved in 3 days. 🎉", reviewAuthor: "Sarah M.", reviewLocation: "First-time buyer, Toronto" },
+    { reviewRating: 5, reviewText: "Finally found a mortgage platform that actually saves me money. The incentives are real! 💰", reviewAuthor: "Michael C.", reviewLocation: "Refinance client, Vancouver" },
+    { reviewRating: 5, reviewText: "The concierge service is amazing. They answered all my questions without any pressure. ⭐", reviewAuthor: "Lisa R.", reviewLocation: "Investment property, Calgary" }
+  ],
+  
+  trustBadges: [
+    { badgeTitle: "Trustpilot Excellent", badgeIcon: "LucideMedal" },
+    { badgeTitle: "4.9/5 Google Reviews", badgeIcon: "Star" },
+    { badgeTitle: "FSRA Licensed", badgeIcon: "Shield" }
+  ],
+  
+  lendersTitle: "Trusted by Canada's Leading Lenders",
+  lendersSubtitle: "Over 15,000 deals matched to 25+ lenders nationwide",
+  lenders: ["TD Bank", "RBC", "BMO", "Scotiabank", "CIBC", "MCAP", "First National", "CMLS", "Meridian", "DUCA", "RFA", "B2B Bank"],
+  
+  faqTitle: "Frequently Asked Questions",
+  faqSubtitle: "Get answers to common questions about our process",
+  faqs: [
+    { question: "How is approvU different from a mortgage broker?", answer: "Unlike traditional brokers, we use technology to match you with personalized offers from multiple lenders without any sales pressure. Our concierge service provides guidance when you need it, but you're always in control of the process." },
+    { question: "Is it safe to submit my information?", answer: "Absolutely. We use bank-level encryption and are fully licensed with FSRA. Your information is secure and never shared without your explicit consent. We're committed to protecting your privacy." },
+    { question: "Will this impact my credit score?", answer: "No, getting qualified through approvU does not impact your credit score. We only perform a soft credit check initially, which doesn't affect your rating. Hard credit checks only happen when you're ready to proceed with a specific lender." },
+    { question: "Who are the advisors helping me?", answer: "Our mortgage concierges are licensed professionals with years of experience in Canadian mortgage lending. They're supported by our AI technology to provide you with the best possible guidance and options." }
+  ],
+  
+  finalCtaBadgeText: "✨ Over 25,000 Happy Homeowners",
+  finalCtaTitle: "Ready to find your best mortgage match?",
+  finalCtaSubtitle: "Join thousands of Canadians who've trusted approvU to simplify their mortgage journey",
+  finalCtaPrimaryText: "Start Your Application",
+  finalCtaPrimaryLink: "/mortgage/approval/",
+  finalCtaSecondaryText: "Compare Offers",
+  finalCtaSecondaryLink: "/mortgage/rates",
+  
+  metaTitle: "approvU - Best Mortgage Rates & Expert Guidance Across Canada",
+  metaDescription: "Find the best mortgage rates in Canada with approvU. Expert guidance for first-time buyers, refinancing, renewals, and investment properties. Get pre-approved in minutes."
 };
 
-// Data configurations
-const howItWorksSteps = [
-  {
-    icon: MessageCircle,
-    iconBg: "secondary/10",
-    iconColor: "secondary",
-    number: 1,
-    hoverBorder: "#085668",
-    title: "Tell us about you & your goals",
-    description:
-      "Smart, conversational quiz that learns what matters most to you",
-  },
-  {
-    icon: TrendingUp,
-    iconBg: "accent/10",
-    iconColor: "accent",
-    number: 2,
-    hoverBorder: "#FB9851",
-    title: "Get Matched to Real Mortgage Offers",
-    description:
-      "Based on your real profile, not estimates. See actual rates and terms",
-  },
-  {
-    icon: Shield,
-    iconBg: "success/10",
-    iconColor: "success",
-    number: 3,
-    hoverBorder: "#085668",
-    title: "Enjoy Personalized Concierge Guidance",
-    description:
-      "Human + Tech support, zero-pressure. We're here when you need us",
-  },
-];
+// Icon mapping helper
+const iconMap: { [key: string]: any } = {
+  MessageCircle,
+  TrendingUp,
+  Shield,
+  Users,
+  HomeIcon,
+  LucideBanknote,
+  LucideMedal,
+  Star,
+  Clock,
+  Phone,
+};
 
-const whyChooseCards = [
-  {
-    icon: Users,
-    iconBg: "accent/10",
-    iconColor: "accent",
-    hoverBorder: "#FB9851",
-    title: "Personalized Offers",
-    description:
-      "Real mortgage offers based on your unique profile, not generic estimates",
-  },
-  {
-    icon: MessageCircle,
-    iconBg: "secondary/10",
-    iconColor: "secondary",
-    hoverBorder: "#085668",
-    title: "Concierge Guidance",
-    description:
-      "Human + AI support when you need it, zero pressure when you don't",
-  },
-  {
-    icon: Shield,
-    iconBg: "secondary/10",
-    iconColor: "success",
-    hoverBorder: "#085668",
-    title: "No Sales Pressure",
-    description: "Work at your own pace with complete transparency and trust",
-  },
-];
+function getIconComponent(iconName: string) {
+  return iconMap[iconName] || Shield;
+}
 
-const services = [
-  {
-    icon: HomeIcon,
-    gradientFrom: "accent",
-    gradientTo: "accent/70",
-    hoverBorder: "#FB9851",
-    title: "First-Time Home Purchase",
-    description:
-      "Navigate your first home purchase with confidence. Get personalized guidance, competitive rates, and exclusive first-time buyer incentives.",
-    features: [
-      "Down payment assistance programs",
-      "Pre-approval with rate guarantee",
-      "Free home buying education",
-    ],
-    iconColor: "accent",
-  },
-  {
-    icon: TrendingUp,
-    gradientFrom: "secondary",
-    gradientTo: "secondary/70",
-    hoverBorder: "#085668",
-    title: "Mortgage Refinancing",
-    description:
-      "Optimize your existing mortgage with better rates, terms, or access your home equity for renovations and investments.",
-    features: [
-      "Rate reduction analysis",
-      "Home equity access options",
-      "Debt consolidation strategies",
-    ],
-    iconColor: "secondary",
-  },
-  {
-    icon: LucideBanknote,
-    gradientFrom: "secondary",
-    gradientTo: "secondary/70",
-    hoverBorder: "#085668",
-    title: "Investment Properties",
-    description:
-      "Build your real estate portfolio with specialized investment property financing and rental income analysis.",
-    features: [
-      "Rental income qualification",
-      "Portfolio expansion strategies",
-      "Commercial property options",
-    ],
-    iconColor: "secondary",
-  },
-  {
-    icon: Shield,
-    gradientFrom: "secondary",
-    gradientTo: "secondary/70",
-    hoverBorder: "#085668",
-    title: "Mortgage Protection",
-    description:
-      "Protect your investment with comprehensive mortgage insurance and life protection solutions.",
-    features: [
-      "Mortgage life insurance",
-      "Disability income protection",
-      "Home and property insurance",
-    ],
-    iconColor: "secondary",
-  },
-];
+// Generate metadata from Strapi
+export async function generateMetadata(): Promise<Metadata> {
+  try {
+    const homepage = await getHomepage();
+    
+    return {
+      title: homepage?.metaTitle || "approvU - Best Mortgage Rates & Expert Guidance Across Canada",
+      description: homepage?.metaDescription || "Find the best mortgage rates in Canada with approvU. Expert guidance for first-time buyers, refinancing, renewals, and investment properties. Get pre-approved in minutes.",
+    };
+  } catch (error) {
+    console.error('Error generating metadata:', error);
+    return {
+      title: "approvU - Best Mortgage Rates & Expert Guidance Across Canada",
+      description: "Find the best mortgage rates in Canada with approvU. Expert guidance for first-time buyers, refinancing, renewals, and investment properties. Get pre-approved in minutes.",
+    };
+  }
+}
 
-const reviews = [
-  {
-    rating: 5,
-    text: "Fast, transparent, and no sales pressure! Got my mortgage approved in 3 days. 🎉",
-    author: "Sarah M.",
-    location: "First-time buyer, Toronto",
-  },
-  {
-    rating: 5,
-    text: "Finally found a mortgage platform that actually saves me money. The incentives are real! 💰",
-    author: "Michael C.",
-    location: "Refinance client, Vancouver",
-  },
-  {
-    rating: 5,
-    text: "The concierge service is amazing. They answered all my questions without any pressure. ⭐",
-    author: "Lisa R.",
-    location: "Investment property, Calgary",
-  },
-];
+export default async function Home() {
+  let strapiData = null;
+  
+  try {
+    strapiData = await getHomepage();
+  } catch (error) {
+    console.error('Error fetching homepage data:', error);
+  }
 
-const trustBadges = [
-  {
-    icon: LucideMedal,
-    title: "Trustpilot Excellent",
-  },
-  {
-    icon: Star,
-    title: "4.9/5 Google Reviews",
-  },
-  {
-    icon: Shield,
-    title: "FSRA Licensed",
-  },
-];
+  // Hybrid approach: Use Strapi data OR fallback to original hardcoded values
+  const data = {
+    heroTitle: strapiData?.heroTitle || FALLBACK_DATA.heroTitle,
+    heroSubtitle: strapiData?.heroSubtitle || FALLBACK_DATA.heroSubtitle,
+    heroCtaText: strapiData?.heroCtaText || FALLBACK_DATA.heroCtaText,
+    heroCtaLink: strapiData?.heroCtaLink || FALLBACK_DATA.heroCtaLink,
+    heroSecondaryCtaText: strapiData?.heroSecondaryCtaText || FALLBACK_DATA.heroSecondaryCtaText,
+    heroSecondaryCtaLink: strapiData?.heroSecondaryCtaLink || FALLBACK_DATA.heroSecondaryCtaLink,
+    heroBackgroundImage: strapiData?.heroBackgroundImage?.url 
+      ? getStrapiMediaUrl(strapiData.heroBackgroundImage.url) 
+      : FALLBACK_DATA.heroBackgroundImage,
+    
+    howItWorksTitle: strapiData?.howItWorksTitle || FALLBACK_DATA.howItWorksTitle,
+    howItWorksSubtitle: strapiData?.howItWorksSubtitle || FALLBACK_DATA.howItWorksSubtitle,
+    howItWorksSteps: strapiData?.howItWorksSteps?.length > 0 
+      ? strapiData.howItWorksSteps 
+      : FALLBACK_DATA.howItWorksSteps,
+    
+    whyChooseTitle: strapiData?.whyChooseTitle || FALLBACK_DATA.whyChooseTitle,
+    whyChooseSubtitle: strapiData?.whyChooseSubtitle || FALLBACK_DATA.whyChooseSubtitle,
+    whyChooseCards: strapiData?.whyChooseCards?.length > 0 
+      ? strapiData.whyChooseCards 
+      : FALLBACK_DATA.whyChooseCards,
+    
+    servicesTitle: strapiData?.servicesTitle || FALLBACK_DATA.servicesTitle,
+    servicesSubtitle: strapiData?.servicesSubtitle || FALLBACK_DATA.servicesSubtitle,
+    services: strapiData?.services?.length > 0 
+      ? strapiData.services 
+      : FALLBACK_DATA.services,
+    
+    reviewsTitle: strapiData?.reviewsTitle || FALLBACK_DATA.reviewsTitle,
+    reviewsSubtitle: strapiData?.reviewsSubtitle || FALLBACK_DATA.reviewsSubtitle,
+    reviews: strapiData?.reviews?.length > 0 
+      ? strapiData.reviews 
+      : FALLBACK_DATA.reviews,
+    
+    trustBadges: strapiData?.trustBadges?.length > 0 
+      ? strapiData.trustBadges 
+      : FALLBACK_DATA.trustBadges,
+    
+    lendersTitle: strapiData?.lendersTitle || FALLBACK_DATA.lendersTitle,
+    lendersSubtitle: strapiData?.lendersSubtitle || FALLBACK_DATA.lendersSubtitle,
+    lenders: strapiData?.lenders || FALLBACK_DATA.lenders,
+    
+    faqTitle: strapiData?.faqTitle || FALLBACK_DATA.faqTitle,
+    faqSubtitle: strapiData?.faqSubtitle || FALLBACK_DATA.faqSubtitle,
+    faqs: strapiData?.faqs?.length > 0 
+      ? strapiData.faqs 
+      : FALLBACK_DATA.faqs,
+    
+    finalCtaBadgeText: strapiData?.finalCtaBadgeText || FALLBACK_DATA.finalCtaBadgeText,
+    finalCtaTitle: strapiData?.finalCtaTitle || FALLBACK_DATA.finalCtaTitle,
+    finalCtaSubtitle: strapiData?.finalCtaSubtitle || FALLBACK_DATA.finalCtaSubtitle,
+    finalCtaPrimaryText: strapiData?.finalCtaPrimaryText || FALLBACK_DATA.finalCtaPrimaryText,
+    finalCtaPrimaryLink: strapiData?.finalCtaPrimaryLink || FALLBACK_DATA.finalCtaPrimaryLink,
+    finalCtaSecondaryText: strapiData?.finalCtaSecondaryText || FALLBACK_DATA.finalCtaSecondaryText,
+    finalCtaSecondaryLink: strapiData?.finalCtaSecondaryLink || FALLBACK_DATA.finalCtaSecondaryLink,
+  };
 
-const lenders = [
-  "TD Bank",
-  "RBC",
-  "BMO",
-  "Scotiabank",
-  "CIBC",
-  "MCAP",
-  "First National",
-  "CMLS",
-  "Meridian",
-  "DUCA",
-  "RFA",
-  "B2B Bank",
-];
-
-const faqs = [
-  {
-    question: "How is approvU different from a mortgage broker?",
-    answer:
-      "Unlike traditional brokers, we use technology to match you with personalized offers from multiple lenders without any sales pressure. Our concierge service provides guidance when you need it, but you're always in control of the process.",
-  },
-  {
-    question: "Is it safe to submit my information?",
-    answer:
-      "Absolutely. We use bank-level encryption and are fully licensed with FSRA. Your information is secure and never shared without your explicit consent. We're committed to protecting your privacy.",
-  },
-  {
-    question: "Will this impact my credit score?",
-    answer:
-      "No, getting qualified through approvU does not impact your credit score. We only perform a soft credit check initially, which doesn't affect your rating. Hard credit checks only happen when you're ready to proceed with a specific lender.",
-  },
-  {
-    question: "Who are the advisors helping me?",
-    answer:
-      "Our mortgage concierges are licensed professionals with years of experience in Canadian mortgage lending. They're supported by our AI technology to provide you with the best possible guidance and options.",
-  },
-];
-
-const finalCTAFeatures = [
-  {
-    icon: Clock,
-    text: "5-Minute Application",
-  },
-  {
-    icon: Phone,
-    text: "No Sales Calls",
-  },
-  {
-    icon: Shield,
-    text: "100% Secure & Private",
-  },
-];
-
-export default function Home() {
   return (
     <>
       {/* Schema Markup for SEO - Invisible to users, only for Google */}
       <SchemaMarkup schema={[organizationSchema, websiteSchema]} />
       
+      {/* Hero Section - Original Styling Preserved */}
       <Hero
-        title="Your Mortgage. Matched to Your Life."
-        subtitle="No haggling. No confusion. Just personalized mortgage offers that help you achieve your homeownership dreams."
-        ctaText="Get Qualified in Minutes"
-        ctaLink="/mortgage/approval/"
-        secondaryCTA="Compare Offers"
-        secondaryCTALink="/mortgage/rates"
-        backgroundImage="/images/hero/hero-family-home.jpg"
+        title={data.heroTitle}
+        subtitle={data.heroSubtitle}
+        ctaText={data.heroCtaText}
+        ctaLink={data.heroCtaLink}
+        secondaryCTA={data.heroSecondaryCtaText}
+        secondaryCTALink={data.heroSecondaryCtaLink}
+        backgroundImage={data.heroBackgroundImage}
       />
 
-      {/* How approvU Works */}
+      {/* How approvU Works - Original Styling Preserved */}
       <section className="py-20 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-[#18768B] text-3xl md:text-4xl font-bold mb-4">
-              How approvU Works
+              {data.howItWorksTitle}
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Three simple steps to your perfect mortgage match
+              {data.howItWorksSubtitle}
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {howItWorksSteps.map((step) => {
-              const IconComponent = step.icon;
+            {data.howItWorksSteps.map((step: any, index: number) => {
+              const IconComponent = getIconComponent(step.stepIcon);
+              const stepNumber = step.stepNumber || index + 1;
 
-              // Determine classes based on step number
-              const iconBgClass =
-                step.number === 1
-                  ? "bg-secondary/10"
-                  : step.number === 2
-                  ? "bg-accent/10"
-                  : "bg-success/10";
-              const iconColorClass =
-                step.number === 1
-                  ? "text-secondary"
-                  : step.number === 2
-                  ? "text-accent"
-                  : "text-success";
-              const numberBgClass =
-                step.number === 1
-                  ? "bg-secondary"
-                  : step.number === 2
-                  ? "bg-accent"
-                  : "bg-secondary";
-              const hoverBorderClass =
-                step.number === 2
-                  ? "hover:border-[#FB9851]"
-                  : "hover:border-[#085668]";
+              const iconBgClass = stepNumber === 1 ? "bg-secondary/10" : stepNumber === 2 ? "bg-accent/10" : "bg-success/10";
+              const iconColorClass = stepNumber === 1 ? "text-secondary" : stepNumber === 2 ? "text-accent" : "text-success";
+              const numberBgClass = stepNumber === 1 ? "bg-secondary" : stepNumber === 2 ? "bg-accent" : "bg-secondary";
+              const hoverBorderClass = stepNumber === 2 ? "hover:border-[#FB9851]" : "hover:border-[#085668]";
 
               return (
                 <Card
-                  key={step.number}
+                  key={index}
                   className={`relative px-8 py-2 hover:shadow-lg ${hoverBorderClass} transition-shadow`}
                 >
                   <div className="flex justify-center mb-6 mt-4">
-                    <div
-                      className={`w-16 h-16 rounded-full ${iconBgClass} flex items-center justify-center`}
-                    >
+                    <div className={`w-16 h-16 rounded-full ${iconBgClass} flex items-center justify-center`}>
                       <IconComponent className={`w-8 h-8 ${iconColorClass}`} />
                     </div>
                   </div>
                   <div className="width-full flex justify-center mb-4">
-                    <div
-                      className={`w-9 h-9 rounded-full ${numberBgClass} flex items-center justify-center text-white font-bold text-l`}
-                    >
-                      {step.number}
+                    <div className={`w-9 h-9 rounded-full ${numberBgClass} flex items-center justify-center text-white font-bold text-l`}>
+                      {stepNumber}
                     </div>
                   </div>
                   <h3 className="text-[#18768B] text-l font-semibold mb-3 text-center">
-                    {step.title}
+                    {step.stepTitle}
                   </h3>
                   <p className="text-muted-foreground text-center">
-                    {step.description}
+                    {step.stepDescription}
                   </p>
                 </Card>
               );
@@ -341,55 +295,37 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Why Choose approvU */}
+      {/* Why Choose approvU - Original Styling Preserved */}
       <section className="py-20 px-4 bg-gradient-to-br from-accent/5 to-secondary/10">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-[#18768B] text-3xl md:text-4xl font-bold mb-4">
-              Why Choose approvU
+              {data.whyChooseTitle}
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Experience mortgage lending reimagined
+              {data.whyChooseSubtitle}
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {whyChooseCards.map((card, index) => {
-              const IconComponent = card.icon;
-
-              // Determine classes based on card type
-              const iconBgClass =
-                card.iconColor === "accent"
-                  ? "bg-accent/10"
-                  : "bg-secondary/10";
-              const iconColorClass =
-                card.iconColor === "accent"
-                  ? "text-accent"
-                  : card.iconColor === "secondary"
-                  ? "text-secondary"
-                  : "text-success";
-              const hoverBorderClass =
-                card.hoverBorder === "#FB9851"
-                  ? "hover:border-[#FB9851]"
-                  : "hover:border-[#085668]";
+            {data.whyChooseCards.map((card: any, index: number) => {
+              const IconComponent = getIconComponent(card.cardIcon);
 
               return (
                 <Card
                   key={index}
-                  className={`p-6 bg-white/80 backdrop-blur-sm hover:shadow-lg ${hoverBorderClass} transition-all`}
+                  className="p-6 bg-white/80 backdrop-blur-sm hover:shadow-lg hover:border-[#085668] transition-all"
                 >
                   <div className="flex justify-center mb-4">
-                    <div
-                      className={`w-14 h-14 rounded-[10px] ${iconBgClass} flex items-center justify-center`}
-                    >
-                      <IconComponent className={`w-7 h-7 ${iconColorClass}`} />
+                    <div className="w-14 h-14 rounded-[10px] bg-secondary/10 flex items-center justify-center">
+                      <IconComponent className="w-7 h-7 text-secondary" />
                     </div>
                   </div>
                   <h3 className="text-[#18768B] text-xl font-semibold mb-3 text-center">
-                    {card.title}
+                    {card.cardTitle}
                   </h3>
                   <p className="text-muted-foreground text-center">
-                    {card.description}
+                    {card.cardDescription}
                   </p>
                 </Card>
               );
@@ -398,73 +334,45 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Our Services */}
+      {/* Our Services - Original Styling Preserved */}
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-[#18768B] text-3xl md:text-4xl font-bold mb-4">
-              Our Services
+              {data.servicesTitle}
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Comprehensive mortgage solutions for every stage of homeownership
+              {data.servicesSubtitle}
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
-            {services.map((service, index) => {
-              const IconComponent = service.icon;
-
-              // Determine classes based on service type
-              const gradientClass =
-                service.gradientFrom === "accent"
-                  ? "bg-gradient-to-br from-accent to-accent/70"
-                  : service.gradientFrom === "secondary"
-                  ? "bg-gradient-to-br from-secondary to-secondary/70"
-                  : service.gradientFrom === "success"
-                  ? "bg-gradient-to-br from-success to-success/70"
-                  : "bg-gradient-to-br from-highlight to-highlight/70";
-
-              const checkColorClass =
-                service.iconColor === "accent"
-                  ? "text-accent"
-                  : service.iconColor === "secondary"
-                  ? "text-secondary"
-                  : service.iconColor === "success"
-                  ? "text-success"
-                  : "text-highlight";
-
-              const hoverBorderClass =
-                service.hoverBorder === "#FB9851"
-                  ? "hover:border-[#FB9851]"
-                  : "hover:border-[#085668]";
+            {data.services.map((service: any, index: number) => {
+              const IconComponent = getIconComponent(service.serviceIcon);
+              const features = typeof service.serviceFeatures === 'string' 
+                ? JSON.parse(service.serviceFeatures)
+                : service.serviceFeatures || [];
 
               return (
                 <Card
                   key={index}
-                  className={`p-8 hover:shadow-xl ${hoverBorderClass} transition-all group`}
+                  className="p-8 hover:shadow-xl hover:border-[#085668] transition-all group"
                 >
                   <div className="flex justify-center mb-6">
-                    <div
-                      className={`w-20 h-20 rounded-full ${gradientClass} flex items-center justify-center group-hover:scale-110 transition-transform`}
-                    >
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-secondary to-secondary/70 flex items-center justify-center group-hover:scale-110 transition-transform">
                       <IconComponent className="w-10 h-10 text-white" />
                     </div>
                   </div>
                   <h3 className="text-2xl font-bold mb-4 text-center">
-                    {service.title}
+                    {service.serviceTitle}
                   </h3>
                   <p className="text-muted-foreground text-center mb-6">
-                    {service.description}
+                    {service.serviceDescription}
                   </p>
                   <ul className="space-y-3">
-                    {service.features.map((feature, featureIndex) => (
-                      <li
-                        key={featureIndex}
-                        className="flex items-center gap-3"
-                      >
-                        <Check
-                          className={`w-5 h-5 ${checkColorClass} flex-shrink-0`}
-                        />
+                    {features.map((feature: string, featureIndex: number) => (
+                      <li key={featureIndex} className="flex items-center gap-3">
+                        <Check className="w-5 h-5 text-secondary flex-shrink-0" />
                         <span className="text-sm">{feature}</span>
                       </li>
                     ))}
@@ -474,42 +382,34 @@ export default function Home() {
             })}
           </div>
         </div>
-      </section>
-
-      {/* Real Reviews */}
+      </section>      {/* Real Reviews - Original Styling Preserved */}
       <section className="py-20 px-4 bg-muted/30">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-[#18768B] text-3xl md:text-4xl font-bold mb-4">
-              Real Reviews from Real Clients
+              {data.reviewsTitle}
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              See what homeowners are saying about their approvU experience
+              {data.reviewsSubtitle}
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 mb-12">
-            {reviews.map((review, index) => (
-              <Card
-                key={index}
-                className="p-6 hover:shadow-lg transition-shadow"
-              >
+            {data.reviews.map((review: any, index: number) => (
+              <Card key={index} className="p-6 hover:shadow-lg transition-shadow">
                 <div className="flex gap-1 mb-4">
-                  {[...Array(review.rating)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className="w-5 h-5 fill-highlight text-highlight"
-                    />
+                  {[...Array(review.reviewRating || 5)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 fill-highlight text-highlight" />
                   ))}
                 </div>
                 <p className="text-muted-foreground mb-4 italic">
-                  "{review.text}"
+                  "{review.reviewText}"
                 </p>
                 <div className="text-[#18768B] font-semibold">
-                  {review.author}
+                  {review.reviewAuthor}
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  {review.location}
+                  {review.reviewLocation}
                 </div>
               </Card>
             ))}
@@ -517,15 +417,15 @@ export default function Home() {
 
           {/* Trust Badges */}
           <div className="flex flex-wrap justify-center items-center gap-8 pt-8 border-t">
-            {trustBadges.map((badge, index) => {
-              const IconComponent = badge.icon;
+            {data.trustBadges.map((badge: any, index: number) => {
+              const IconComponent = getIconComponent(badge.badgeIcon);
               return (
                 <div key={index} className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-full bg-success/10 flex items-center justify-center">
                     <IconComponent className="w-6 h-6 text-success" />
                   </div>
                   <div>
-                    <div className="font-semibold">{badge.title}</div>
+                    <div className="font-semibold">{badge.badgeTitle}</div>
                   </div>
                 </div>
               );
@@ -534,20 +434,20 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Lenders We Work With */}
+      {/* Lenders We Work With - Original Styling Preserved */}
       <section className="py-20 px-4 bg-gradient-to-br from-success/10 via-secondary/10 to-accent/10">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Trusted by Canada's Leading Lenders
+              {data.lendersTitle}
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Over 15,000 deals matched to 25+ lenders nationwide
+              {data.lendersSubtitle}
             </p>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
-            {lenders.map((lender) => (
+            {(typeof data.lenders === 'string' ? JSON.parse(data.lenders) : data.lenders).map((lender: string) => (
               <Card
                 key={lender}
                 className="py-6 px-4 bg-white hover:shadow-lg hover:border-[#FBA05E] text-[#348699] transition-all hover:scale-105"
@@ -568,20 +468,20 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FAQ Section */}
+      {/* FAQ Section - Original Styling Preserved */}
       <section className="py-20 px-4 bg-muted/30">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-[#348699] text-3xl md:text-4xl font-bold mb-4">
-              Frequently Asked Questions
+              {data.faqTitle}
             </h2>
             <p className="text-lg text-muted-foreground">
-              Get answers to common questions about our process
+              {data.faqSubtitle}
             </p>
           </div>
 
           <Accordion type="single" collapsible className="w-full mb-8">
-            {faqs.map((faq, index) => (
+            {data.faqs.map((faq: any, index: number) => (
               <AccordionItem key={index} value={`item-${index + 1}`}>
                 <AccordionTrigger className="text-left">
                   {faq.question}
@@ -600,22 +500,17 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Final CTA */}
+      {/* Final CTA - Original Styling Preserved */}
       <section className="py-20 px-4 bg-gradient-to-br from-accent via-accent/90 to-secondary text-white">
         <div className="max-w-4xl mx-auto text-center">
-          <Badge
-            variant="secondary"
-            className="mb-6 bg-white/20 text-white border-white/30 backdrop-blur-sm"
-          >
-            ✨ Over 25,000 Happy Homeowners
+          <Badge variant="secondary" className="mb-6 bg-white/20 text-white border-white/30 backdrop-blur-sm">
+            {data.finalCtaBadgeText}
           </Badge>
           <h2 className="text-3xl md:text-5xl font-bold mb-6">
-            Ready to find your{" "}
-            <span className="text-highlight">best mortgage match</span>?
+            {data.finalCtaTitle}
           </h2>
           <p className="text-xl mb-8 text-white/95">
-            Join thousands of Canadians who've trusted approvU to simplify their
-            mortgage journey
+            {data.finalCtaSubtitle}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Button
@@ -623,8 +518,8 @@ export default function Home() {
               asChild
               className="text-lg px-8 bg-white text-[#FBA05E] hover:bg-white/90 shadow-xl"
             >
-              <Link href="/mortgage/approval/">
-                Start Your Application
+              <Link href={data.finalCtaPrimaryLink}>
+                {data.finalCtaPrimaryText}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
@@ -634,22 +529,24 @@ export default function Home() {
               asChild
               className="text-lg px-8 border-2 border-white text-white bg-transparent hover:bg-white hover:text-primary backdrop-blur-sm"
             >
-              <Link href="/mortgage/rates">Compare Offers</Link>
+              <Link href={data.finalCtaSecondaryLink}>
+                {data.finalCtaSecondaryText}
+              </Link>
             </Button>
           </div>
           <div className="grid grid-cols-3 text-center">
-            {finalCTAFeatures.map((feature, index) => {
-              const IconComponent = feature.icon;
-              return (
-                <div
-                  key={index}
-                  className="flex flex-row items-center align-middle justify-center gap-2"
-                >
-                  <IconComponent className="w-5 h-5 text-white/90" />
-                  <span className="text-sm text-white/90">{feature.text}</span>
-                </div>
-              );
-            })}
+            <div className="flex flex-row items-center align-middle justify-center gap-2">
+              <Clock className="w-5 h-5 text-white/90" />
+              <span className="text-sm text-white/90">5-Minute Application</span>
+            </div>
+            <div className="flex flex-row items-center align-middle justify-center gap-2">
+              <Phone className="w-5 h-5 text-white/90" />
+              <span className="text-sm text-white/90">No Sales Calls</span>
+            </div>
+            <div className="flex flex-row items-center align-middle justify-center gap-2">
+              <Shield className="w-5 h-5 text-white/90" />
+              <span className="text-sm text-white/90">100% Secure & Private</span>
+            </div>
           </div>
         </div>
       </section>

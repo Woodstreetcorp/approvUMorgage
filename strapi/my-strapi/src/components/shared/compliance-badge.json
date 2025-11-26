@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_shared_compliance_badges",
+  "info": {
+    "displayName": "Compliance Badge",
+    "description": "Licensing and compliance badge with title, description, and icon"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "icon": {
+      "type": "string"
+    }
+  }
+}

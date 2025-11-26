@@ -1,13 +1,34 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Briefcase, Users, Heart, TrendingUp, Award, Coffee, Zap, Globe } from 'lucide-react';
+import { getCareersPage, getStrapiMediaUrl } from '@/lib/strapi';
 
-export const metadata: Metadata = {
-  title: 'Careers at approvU | Join Our Team',
-  description: 'Join approvU Mortgage and help transform the Canadian mortgage industry. Explore career opportunities in technology, mortgage services, and operations.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  try {
+    const careersData = await getCareersPage();
+    const { metaTitle, metaDescription } = careersData;
 
-export default function Careers() {
+    return {
+      title: metaTitle || 'Careers at approvU | Join Our Team',
+      description: metaDescription || 'Join approvU Mortgage and help transform the Canadian mortgage industry.',
+    };
+  } catch (error) {
+    console.error('Error generating metadata:', error);
+    return {
+      title: 'Careers at approvU | Join Our Team',
+      description: 'Join approvU Mortgage and help transform the Canadian mortgage industry.',
+    };
+  }
+}
+
+export default async function Careers() {
+  let careersData = null;
+  
+  try {
+    careersData = await getCareersPage();
+  } catch (error) {
+    console.error('Error fetching careers data:', error);
+  }
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -17,11 +38,10 @@ export default function Careers() {
             <Briefcase className="w-8 h-8 text-primary" />
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-primary mb-6">
-            Join the approvU Team
+            {careersData?.heroTitle || 'Join the approvU Team'}
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-            Help us transform the Canadian mortgage industry by making homeownership simpler, 
-            more transparent, and more rewarding for every Canadian.
+            {careersData?.heroSubtitle || 'Help us transform the Canadian mortgage industry by making homeownership simpler, more transparent, and more rewarding for every Canadian.'}
           </p>
           <Link 
             href="#open-positions"
@@ -31,6 +51,19 @@ export default function Careers() {
           </Link>
         </div>
       </section>
+
+      {/* Strapi Content Section */}
+      {careersData?.content && (
+        <section className="py-12 px-4 bg-gray-50">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white rounded-lg shadow-sm p-8">
+              <div className="prose prose-lg max-w-none">
+                <div dangerouslySetInnerHTML={{ __html: careersData.content.replace(/\n/g, '<br/>') }} />
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Why Work Here */}
       <section className="py-20 px-4 bg-white">

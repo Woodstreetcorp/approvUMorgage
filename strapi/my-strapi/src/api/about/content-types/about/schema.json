@@ -1,0 +1,121 @@
+{
+  "kind": "singleType",
+  "collectionName": "abouts",
+  "info": {
+    "singularName": "about",
+    "pluralName": "abouts",
+    "displayName": "About Page",
+    "description": "About page content - company story, mission, vision, team, differentiators"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "heroTitle": {
+      "type": "string"
+    },
+    "heroSubtitle": {
+      "type": "text"
+    },
+    "heroCtaText": {
+      "type": "string"
+    },
+    "heroCtaLink": {
+      "type": "string"
+    },
+    "heroBackgroundImage": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "missionVisionTitle": {
+      "type": "string"
+    },
+    "missionVisionSubtitle": {
+      "type": "text"
+    },
+    "missionVisionCards": {
+      "type": "component",
+      "repeatable": true,
+      "component": "shared.mission-vision-card"
+    },
+    "differentiatorsTitle": {
+      "type": "string"
+    },
+    "differentiatorsSubtitle": {
+      "type": "text"
+    },
+    "differentiators": {
+      "type": "component",
+      "repeatable": true,
+      "component": "shared.differentiator-card"
+    },
+    "storyTitle": {
+      "type": "string"
+    },
+    "storySubtitle": {
+      "type": "text"
+    },
+    "storyParagraph1": {
+      "type": "text"
+    },
+    "storyParagraph2": {
+      "type": "text"
+    },
+    "storyParagraph3": {
+      "type": "text"
+    },
+    "statsTitle": {
+      "type": "string"
+    },
+    "stats": {
+      "type": "component",
+      "repeatable": true,
+      "component": "shared.stat"
+    },
+    "quoteText": {
+      "type": "text"
+    },
+    "teamTitle": {
+      "type": "string"
+    },
+    "teamSubtitle": {
+      "type": "text"
+    },
+    "teamMembers": {
+      "type": "component",
+      "repeatable": true,
+      "component": "shared.team-member"
+    },
+    "complianceTitle": {
+      "type": "string"
+    },
+    "complianceSubtitle": {
+      "type": "text"
+    },
+    "complianceBadges": {
+      "type": "component",
+      "repeatable": true,
+      "component": "shared.compliance-badge"
+    },
+    "ctaTitle": {
+      "type": "string"
+    },
+    "ctaDescription": {
+      "type": "text"
+    },
+    "ctaButtonText": {
+      "type": "string"
+    },
+    "ctaButtonLink": {
+      "type": "string"
+    },
+    "metaTitle": {
+      "type": "string"
+    },
+    "metaDescription": {
+      "type": "text"
+    }
+  }
+}

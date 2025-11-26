@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_shared_mission_vision_cards",
+  "info": {
+    "displayName": "Mission Vision Card",
+    "description": "Mission or Vision card with title, content, and icon"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "content": {
+      "type": "text"
+    },
+    "icon": {
+      "type": "string"
+    }
+  }
+}

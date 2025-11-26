@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_shared_team_members",
+  "info": {
+    "displayName": "Team Member",
+    "description": "Leadership team member with name, role, bio, and credentials"
+  },
+  "options": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "role": {
+      "type": "string"
+    },
+    "bio": {
+      "type": "text"
+    },
+    "credentials": {
+      "type": "string"
+    }
+  }
+}

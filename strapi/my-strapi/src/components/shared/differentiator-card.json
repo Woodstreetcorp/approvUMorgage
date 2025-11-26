@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_shared_differentiator_cards",
+  "info": {
+    "displayName": "Differentiator Card",
+    "description": "What makes us different card with title, description, and icon"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "icon": {
+      "type": "string"
+    }
+  }
+}

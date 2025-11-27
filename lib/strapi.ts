@@ -25,7 +25,7 @@ export async function fetchAPI<T = any>(
     headers: {
       'Content-Type': 'application/json',
     },
-    next: { revalidate: 60 }, // Revalidate every 60 seconds (ISR)
+    next: { revalidate: 10 }, // Revalidate every 10 seconds (ISR)
   };
 
   const mergedOptions = {
@@ -92,6 +92,17 @@ export async function getMortgagePage(slug: string) {
     return response.data[0]; // Return first matching entry
   } catch (error) {
     console.error(`Failed to fetch mortgage page (${slug}):`, error);
+    return null;
+  }
+}
+
+// Helper to get contact page data
+export async function getContactPage() {
+  try {
+    const response = await fetchAPI('/contact-page?populate=*');
+    return response.data;
+  } catch (error) {
+    console.error('Failed to fetch contact page:', error);
     return null;
   }
 }

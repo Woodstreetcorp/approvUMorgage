@@ -17,7 +17,19 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-const faqs = [
+export default async function MortgageBasicsPage() {
+  let mortgageData = null;
+  
+  try {
+    mortgageData = await getMortgagePage('basics');
+  } catch (error) {
+    console.error('Error fetching mortgage basics data:', error);
+  }
+
+  const heroTitle = mortgageData?.heroTitle || "Master Mortgage Fundamentals";
+  const heroSubtitle = mortgageData?.heroSubtitle || "Build a solid understanding of how mortgages work in Canada with our comprehensive basics guide";
+
+  const faqs = [
   {
     question: "What's the difference between mortgage term and amortization?",
     answer:
@@ -38,19 +50,7 @@ const faqs = [
     answer:
       "At the end of your term, you can renew with your current lender, switch to a new lender, or pay off the remaining balance. This is an opportunity to renegotiate your rate and terms without penalties.",
   },
-};
-
-export default async function MortgageBasicsPage() {
-  let mortgageData = null;
-  
-  try {
-    mortgageData = await getMortgagePage('basics');
-  } catch (error) {
-    console.error('Error fetching mortgage basics data:', error);
-  }
-
-  const heroTitle = mortgageData?.heroTitle || "Master Mortgage Fundamentals";
-  const heroSubtitle = mortgageData?.heroSubtitle || "Build a solid understanding of how mortgages work in Canada with our comprehensive basics guide";
+];
 
   return (
     <>

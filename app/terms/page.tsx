@@ -1,14 +1,29 @@
 import { Metadata } from 'next';
+import { getMortgagePage } from '@/lib/strapi';
 
-export const metadata: Metadata = {
-  title: 'Terms of Service | approvU Mortgage',
-  description: 'Terms and conditions for using approvU\'s mortgage brokerage services and digital platform.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const pageData = await getMortgagePage('terms');
+  
+  return {
+    title: pageData?.metaTitle || 'Terms of Service | approvU Mortgage',
+    description: pageData?.metaDescription || 'Terms and conditions for using approvU\'s mortgage brokerage services and digital platform.',
+  };
+}
 
-export default function Terms() {
+export default async function Terms() {
+  let pageData = null;
+  
+  try {
+    pageData = await getMortgagePage('terms');
+  } catch (error) {
+    console.error('Error fetching terms page data:', error);
+  }
+
+  const pageTitle = pageData?.heroTitle || 'Terms of Service';
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-16">
-      <h1 className="text-4xl font-bold text-primary mb-8">Terms of Service</h1>
+      <h1 className="text-4xl font-bold text-primary mb-8">{pageTitle}</h1>
       <p className="text-muted-foreground mb-8">Last updated: December 2024</p>
 
       <div className="prose prose-lg max-w-none space-y-8">

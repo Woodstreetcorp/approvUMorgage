@@ -1,15 +1,30 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { getMortgagePage } from '@/lib/strapi';
 
-export const metadata: Metadata = {
-  title: 'Cookie Policy | approvU Mortgage',
-  description: 'Learn about how approvU uses cookies and similar technologies to improve your experience on our website.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const pageData = await getMortgagePage('cookie-policy');
+  
+  return {
+    title: pageData?.metaTitle || 'Cookie Policy | approvU Mortgage',
+    description: pageData?.metaDescription || 'Learn about how approvU uses cookies and similar technologies to improve your experience on our website.',
+  };
+}
 
-export default function CookiePolicy() {
+export default async function CookiePolicy() {
+  let pageData = null;
+  
+  try {
+    pageData = await getMortgagePage('cookie-policy');
+  } catch (error) {
+    console.error('Error fetching cookie-policy page data:', error);
+  }
+
+  const pageTitle = pageData?.heroTitle || 'Cookie Policy';
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-16">
-      <h1 className="text-4xl font-bold text-primary mb-8">Cookie Policy</h1>
+      <h1 className="text-4xl font-bold text-primary mb-8">{pageTitle}</h1>
       <p className="text-muted-foreground mb-8">Last updated: December 2024</p>
 
       <div className="prose prose-lg text-muted-foreground space-y-8">

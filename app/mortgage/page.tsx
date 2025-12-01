@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { getMortgagePage } from '@/lib/strapi';
 import Hero from "@/components/sections/Hero";
 import CTASection from "@/components/sections/CTASection";
 import {
@@ -8,13 +9,25 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-export const metadata: Metadata = {
-  title: "Mortgage Solutions",
-  description:
-    "Comprehensive mortgage guidance, calculators, rates, and expert advice for Canadian homebuyers and homeowners.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const pageData = await getMortgagePage('mortgage-main');
+  
+  return {
+    title: pageData?.metaTitle || "Mortgage Solutions | approvU",
+    description: pageData?.metaDescription || "Comprehensive mortgage guidance, calculators, rates, and expert advice for Canadian homebuyers and homeowners.",
+  };
+}
 
-export default function MortgagePage() {
+export default async function MortgagePage() {
+  let pageData = null;
+  try {
+    pageData = await getMortgagePage('mortgage-main');
+  } catch (error) {
+    console.error('Error fetching mortgage page data:', error);
+  }
+
+  const heroTitle = pageData?.heroTitle || "Your Mortgage Journey Starts Here";
+  const heroSubtitle = pageData?.heroSubtitle || "Expert guidance, competitive rates, and personalized solutions for every Canadian homebuyer";
   const sections = [
     {
       title: "Mortgage Solutions",
@@ -80,8 +93,8 @@ export default function MortgagePage() {
   return (
     <>
       <Hero
-        title="Your Mortgage Journey Starts Here"
-        subtitle="Expert guidance, competitive rates, and personalized solutions for every Canadian homebuyer"
+        title={heroTitle}
+        subtitle={heroSubtitle}
         ctaText="✨ Get Pre-Approved Today"
         ctaLink="/mortgage-appointment-online"
         secondaryCTA="Explore Solutions"

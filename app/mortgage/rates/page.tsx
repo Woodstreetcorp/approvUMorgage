@@ -1,18 +1,31 @@
-import Hero from "@/components/sections/Hero";
 import { Metadata } from "next";
+import { getMortgagePage } from '@/lib/strapi';
+import Hero from "@/components/sections/Hero";
 
-export const metadata: Metadata = {
-  title: "Mortgage Rates Canada",
-  description:
-    "Current mortgage rates across Canada. Compare fixed and variable rates by province.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const pageData = await getMortgagePage('mortgage-rates');
+  
+  return {
+    title: pageData?.metaTitle || "Mortgage Rates Canada | approvU",
+    description: pageData?.metaDescription || "Current mortgage rates across Canada. Compare fixed and variable rates by province.",
+  };
+}
 
-export default function RatesPage() {
+export default async function RatesPage() {
+  let pageData = null;
+  try {
+    pageData = await getMortgagePage('mortgage-rates');
+  } catch (error) {
+    console.error('Error fetching mortgage rates page data:', error);
+  }
+
+  const heroTitle = pageData?.heroTitle || "Compare the Best Mortgage Rates in Canada";
+  const heroSubtitle = pageData?.heroSubtitle || "Find competitive rates from top lenders across all provinces. Compare fixed, variable, and specialty mortgage rates tailored to your needs.";
   return (
     <>
       <Hero
-        title="Compare the Best Mortgage Rates in Canada"
-        subtitle="Find competitive rates from top lenders across all provinces. Compare fixed, variable, and specialty mortgage rates tailored to your needs."
+        title={heroTitle}
+        subtitle={heroSubtitle}
         ctaText="✨ Get Your Free Quote"
         ctaLink="/contact"
         secondaryCTA="View Rate Trends"

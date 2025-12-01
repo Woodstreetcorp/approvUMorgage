@@ -1,13 +1,29 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Shield, CheckCircle, Award, FileCheck } from 'lucide-react';
+import { getMortgagePage } from '@/lib/strapi';
 
-export const metadata: Metadata = {
-  title: 'FSRA Licensing & Regulation | approvU Mortgage',
-  description: 'approvU Mortgage is a fully licensed mortgage brokerage regulated by the Financial Services Regulatory Authority of Ontario (FSRA). License #13551.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const pageData = await getMortgagePage('fsra-license');
+  
+  return {
+    title: pageData?.metaTitle || 'FSRA Licensing & Regulation | approvU Mortgage',
+    description: pageData?.metaDescription || 'approvU Mortgage is a fully licensed mortgage brokerage regulated by the Financial Services Regulatory Authority of Ontario (FSRA). License #13551.',
+  };
+}
 
-export default function FSRALicense() {
+export default async function FSRALicense() {
+  let pageData = null;
+  
+  try {
+    pageData = await getMortgagePage('fsra-license');
+  } catch (error) {
+    console.error('Error fetching fsra-license page data:', error);
+  }
+
+  const pageTitle = pageData?.heroTitle || 'FSRA Licensed & Regulated';
+  const pageSubtitle = pageData?.heroSubtitle || 'approvU Mortgage operates under the highest regulatory standards to protect our clients and maintain industry trust.';
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-16">
       {/* Hero Section */}
@@ -15,10 +31,9 @@ export default function FSRALicense() {
         <div className="inline-flex items-center justify-center w-20 h-20 bg-primary/10 rounded-full mb-6">
           <Shield className="w-10 h-10 text-primary" />
         </div>
-        <h1 className="text-4xl font-bold text-primary mb-4">FSRA Licensed & Regulated</h1>
+        <h1 className="text-4xl font-bold text-primary mb-4">{pageTitle}</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          approvU Mortgage operates under the highest regulatory standards to protect our clients 
-          and maintain industry trust.
+          {pageSubtitle}
         </p>
       </div>
 
